@@ -86,15 +86,15 @@ priors.SigmaX0 = 1e1*eye(dim.n);
 priors.a_alpha = Inf;
 priors.b_alpha = 0;
 
+
+
+
 options.priors = priors;
 
-options.verbose=1;
-options.DisplayWin=1;
-
 %% select fixed-effects fitting of multi-session data
-% options.multisession.fixed.theta = 'all'; 
-% options.multisession.fixed.phi = 'all'; 
-% options.multisession.fixed.X0 = 'all'; 
+options.multisession.fixed.theta = 'all'; 
+options.multisession.fixed.phi = 'all'; 
+options.multisession.fixed.X0 = 'all'; 
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);
 % displayResults(posterior,out,y,x,x0,theta,phi,Inf,Inf);
