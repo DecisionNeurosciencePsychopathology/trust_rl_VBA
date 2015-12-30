@@ -73,7 +73,7 @@ if multisession
         options.multisession.fixed.phi = 'all';
         
         % allow unique initial values for each trustee?
-        options.multisession.fixed.X0 = 'all';
+%         options.multisession.fixed.X0 = 'all';
     end
     
     
