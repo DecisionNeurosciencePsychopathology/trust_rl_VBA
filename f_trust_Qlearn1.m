@@ -1,4 +1,4 @@
-function  [fx,dfdx,dfdP] = f_trust_Qlearn1(x,P,u,in)
+function  [fx,dfdx,dfdP] = f_trust_Qlearn1(x,theta,u,in)
 % evolution function of q-values of a RL agent (2-armed bandit problem)
 % [fx,dfdx,dfdP] = f_Qlearn2(x,P,u,in)
 % Here, there are only two q-values to evolve, i.e. there are only two
@@ -13,7 +13,7 @@ function  [fx,dfdx,dfdP] = f_trust_Qlearn1(x,P,u,in)
 %   - dfdx/dfdP: gradient of the q-values evolution function, wrt q-avlues
 %   and evolution parameter, respectively.
 r = 1; % when trustee shares the reward is $1.5, or for simplicity r = 1
-alpha = 1./(1+exp(-P)); % learning rate is bounded between 0 and 1.
+alpha = 1./(1+exp(-theta)); % learning rate is bounded between 0 and 1.
 % fx = 0;
 pe = u(2).*r-x; % prediction error
 
@@ -36,4 +36,4 @@ fx = x + alpha*pe;
 
 dfdx = [1-alpha];
 %             0, 0];
-dfdP = [alpha*(1-alpha)*pe(1)];
+dfdP = [alpha*(1-alpha)*pe];

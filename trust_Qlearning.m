@@ -1,45 +1,48 @@
-% Q-learning demo
-% In psychological terms, motivation can be defined as the set of processes
-% that generate goals and thus determine behaviour. A goal is nothing else
-% than a ???state of affairs???, to which people attribute (subjective) value.
-% Empirically speaking, one can access these values by many means,
-% including subjective verbal report or decision making. These measures
-% have been used to demonstrate how value change as people learn a new
-% operant response. This is predicted by reinforcement learning theories,
-% which essentially relate behavioural response frequency to reward. In
-% this context, value is expected reward, and it changes in proportion to
-% the agent's prediction error, i.e. the difference between actual and
-% expected reward.
-% This demo simulates a number of sequences of choices of a Q-learning
-% agent, which is a simple example of reinforcement learning algiorithms.
-% We then invert the model using VBA. Finally, we perform a Volterra
-% decomposition of hidden states dynamics onto a set of appropriately
-% chosen basis functions (here: the agent's chosen action, and the winning
-% action). This diagnostic analysis allows one to identify the hidden
-% states' impulse response to experimentally controlled inputs to the
-% system.
+function [posterior,out] = trust_Qlearning(id, multisession, fixed)
+
+% VBA fitting of Qlearning to trust data, using VBA-toolbox
+%
+% [posterior,out] = trust_Qlearning(id, multisession, fixed)
+%
+% inputs:
+% id = 6-digit ID
+% multisession = 1 (default)    treat each trustee as a different run, if 0 all runs are concatenated
+% fixed = 1 (default)           fix learning rate and inv. temperature, BUT NOT X0, across trustees
+% 
+% outputs:
+% posterior                     posterior distributions
+% out                           fit statistics, diagnostics
+
+if nargin<1
+    error('*** Enter 6-digit subject ID ***')
+elseif nargin<2
+multisession = 1;
+fixed = 1;    
+elseif nargin<3
+fixed = 1;    
+end
 
 close all
-clear variables
+% clear variables
 
 
 
 
-f_fname = @f_trust_Qlearn1; % evolution function (Q-learning)
-g_fname = @g_trust_softmax1; % observation function (softmax mapping)
+f_fname = @f_trust_Qlearn1; % evolution function (Q-learning) with a single hidden state, Q(share)
+g_fname = @g_trust_softmax1; % observation function (softmax mapping), evaluates Q(share)
 %h_fname = @h_randOutcome; % feedback function (reward schedule)
 h_fname = @h_Id; % feedback function, reads from u
 
-multisession = 1;
-fixed = 1;
+
 ntrials = 192;
 
 n_hidden_states = 1; %only track the value of sharing, i.e. V(trustee)
 %% load subject's data
 cd /Users/localadmin/Google' Drive'/skinner/trust/scan_behavior/
 %cd /Users/localadmin/trust_rl/data
-% our favorite Qlearning subject: 881105
-load trust881075.mat
+% exemplar Qlearning subjects: 881105, 213704, 216806, 220043
+
+load(sprintf('trust%d',id))
 actions = share(1:ntrials)'; %subject's actions
 u(1,:) = double(actions);
 rewards = double(strcmp(b.TrusteeDecides(b.Order_RS>-999),'share')); %rewards including counterfactual ones (trustee's actions)
@@ -71,7 +74,7 @@ if multisession
     if fixed
         options.multisession.fixed.theta = 'all';
         options.multisession.fixed.phi = 'all';
-        
+%         
         % allow unique initial values for each trustee?
 %         options.multisession.fixed.X0 = 'all';
     end
@@ -102,11 +105,11 @@ priors.muTheta = zeros(dim.n_theta,1);
 priors.muX0 = zeros(n_hidden_states,1);
 priors.SigmaPhi = 1e1*eye(dim.n_phi);
 priors.SigmaTheta = 1e1*eye(dim.n_theta);
-priors.SigmaX0 = .5*eye(dim.n);
-priors.a_sigma = 1;       % Jeffrey's prior
-priors.b_sigma = 1;       % Jeffrey's prior
-priors.a_alpha = Inf;
-priors.b_alpha = 0;
+priors.SigmaX0 = .3*eye(dim.n);
+% priors.a_sigma = 1;       % Jeffrey's prior
+% priors.b_sigma = 1;       % Jeffrey's prior
+% priors.a_alpha = Inf;
+% priors.b_alpha = 0;
 
 options.priors = priors;
 
@@ -116,6 +119,13 @@ options.DisplayWin=1;
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);
 % displayResults(posterior,out,y,x,x0,theta,phi,Inf,Inf);
+
+%% print condition order for interpreting results
+ConditionOrder  = unique(b.identity,'stable')
+
+%% get prediction error time course
+% [fx,dfdx,dfdP,pe] = f_trust_Qlearn1(x,P,u,in)
+
 %% select fixed-effects fitting of multi-session data
 
 %
