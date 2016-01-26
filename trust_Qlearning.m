@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning(id, multisession, fixed)
+function [posterior,out] = trust_Qlearning(id, multisession, fixed, sigmakappa)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -96,15 +96,15 @@ options.skipf(1) = 1; % apply identity mapping from x0 to x1.
 
 
 %% defined number of hidden states and parameters
-dim = struct('n',n_hidden_states,'n_theta',1,'n_phi',1, 'n_t', n_t);
+dim = struct('n',n_hidden_states,'n_theta',1,'n_phi',2, 'n_t', n_t);
 
 
 %% priors
-priors.muPhi = ones(dim.n_phi,1);
+priors.muPhi = [1 0];
 priors.muTheta = zeros(dim.n_theta,1);
 priors.muX0 = zeros(n_hidden_states,1);
-priors.SigmaPhi = 1e1*eye(dim.n_phi);
 priors.SigmaTheta = 1e1*eye(dim.n_theta);
+priors.SigmaPhi = diag([10 sigmakappa]);
 priors.SigmaX0 = .3*eye(dim.n);
 % priors.a_sigma = 1;       % Jeffrey's prior
 % priors.b_sigma = 1;       % Jeffrey's prior
@@ -122,6 +122,9 @@ options.DisplayWin=1;
 
 %% print condition order for interpreting results
 ConditionOrder  = unique(b.identity,'stable')
+
+h = figure(1);
+savefig(h,sprintf('%d_multisession%d_fixed%d_SigmaKappa%d', id, multisession, fixed, sigmakappa));
 
 %% get prediction error time course
 % [fx,dfdx,dfdP,pe] = f_trust_Qlearn1(x,P,u,in)
