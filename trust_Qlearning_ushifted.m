@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning(id, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices)
+function [posterior,out] = trust_Qlearning_ushifted(id, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -103,9 +103,13 @@ load(sprintf('trust%s',id))
 % load trust881105.mat;
 
 actions = share(1:ntrials)'; %subject's actions
-u(1,:) = double(actions);
+actions = double(actions);
+%actions(noresponse'==1)= -999;
+u(1,:) = actions;
+
 rewards = double(strcmp(b.TrusteeDecides(b.Order_RS>-999),'share')); %rewards including counterfactual ones (trustee's actions)
 rewards(rewards==0) = -1;
+%rewards(noresponse'==1) = -999;
 u(2,:) = rewards(1:ntrials)';
 
 %% Experimental design
@@ -136,7 +140,10 @@ index_vector([1,1+blocklength,1+2*blocklength, 1+3*blocklength],1) = 1;
 u(4,:) = index_vector;
 
 y = u(1,:); %the subject's actions
-u = [zeros(width(u)) u(:,2:end)];
+%u = [zeros(7,1) u(:,2:end)];
+%u(2,:) = [0 u(2,1:end-1)];
+u = [zeros(7,1) u(:,1:end-1)];
+%u(1:7, noresponse'==1) = -999;
 
 %% Sensitivities or bias parameters
 options.inF.reputation_sensitive = reputation_sensitive;
@@ -172,7 +179,9 @@ if multisession
     end
         
 end
-%  options.isYout(u(2,:)==-999)=1;
+options.isYout=zeros(size(u(1,:)));
+options.isYout(:,1)=1;
+options.isYout(noresponse'==1)=1;
 options.binomial = 1;
 options.skipf = zeros(1,n_t);
 options.skipf(1) = 1; % apply identity mapping from x0 to x1.
@@ -229,19 +238,19 @@ priors.SigmaX0 = .3*eye(dim.n);
 options.priors = priors;
 
 options.verbose=1;
-options.DisplayWin=0;
+options.DisplayWin=1;
 options.GnFigs=0;
 
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);
-% displayResults(posterior,out,y,x,x0,theta,phi,Inf,Inf);
+%displayResults(posterior,out,y,x,x0,theta,phi,Inf,Inf);
 
 %% print condition order for interpreting results
 ConditionOrder  = unique(b.identity,'stable')
 out.design = ConditionOrder;
 
-% h = figure(1);
-% savefig(h,sprintf('%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
+h = figure(1);
+savefig(h,sprintf('ushifted_%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
 
 %% get prediction errors
 alpha = 1./(1+exp(-posterior.muTheta(1)));
@@ -252,7 +261,7 @@ else
 end
  
 
-filename = sprintf('%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+filename = sprintf('ushifted_%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
 save(filename); 
 
 %% get prediction error time course

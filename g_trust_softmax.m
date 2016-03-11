@@ -1,4 +1,4 @@
-function  [ gx,dgdx,dgdP ] = g_trust_softmax(x,P,u,in )
+function  [ gx,dgdx ] = g_trust_softmax(x,P,u,in )
 % INPUT
 % - x : Q-values (2x1)
 % - P : inverse temperature (1x1)
