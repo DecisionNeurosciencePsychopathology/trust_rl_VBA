@@ -87,11 +87,16 @@ n_hidden_states = 1; %only track the value of sharing, i.e. V(trustee)
     [~, me] = system('whoami');
     me = strtrim(me);
     if strcmp(me, 'polinavanyukov') == 1
-        datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/trust data recent/scan_behavior/';
+        datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/';
     else
         datalocation = '/Users/localadmin/Google Drive/skinner/trust/scan_behavior/';
     end
 ntrials = 192;
+%ntrials = 190;
+% if length(b.TrusteeDecides)<192
+%     b.TrusteeDecides = [b.TrusteeDecides; num2cell(ones(ntrials-length(b.TrusteeDecides))*-999)];
+% end
+
 
 %% Load subject's data
 %cd /Users/localadmin/Google' Drive'/skinner/trust/scan_behavior/

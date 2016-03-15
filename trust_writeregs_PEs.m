@@ -12,7 +12,7 @@ else
     [~, me] = system('whoami');
     me = strtrim(me);
     if strcmp(me,'polinavanyukov')==1
-        pe_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/trust data recent/scan_behavior/');
+        pe_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/');
     else
         pe_location = glob('?');
     end
@@ -22,6 +22,7 @@ data_dir_str= '/Users/polinavanyukov/Box Sync/Project Trust Game/regs/';
 
 cd(data_dir_str)
 files = dir('*feedback_Times.dat');
+
 num_of_subjects = length(files);
 
 %% choose model's parameters
@@ -34,7 +35,7 @@ valence_p = 0;
 valence_n = 0;
 assymetry_choices = 0;
 
-M_name = strcat(pe_location, sprintf( 'shiftedPEs_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d',multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
+M_name = strcat(pe_location, sprintf('shiftedPEs_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d',multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
 load(char(M_name));
 
     trial_2=2;
@@ -64,17 +65,17 @@ for index = 1:num_of_subjects
     dlmwrite(['/Users/polinavanyukov/Box Sync/Project Trust Game/regs/trust_shifted' id 'pos_neg_PEs' '.dat'],[regressors(:,1:2), pes_pos, pes_neg],'delimiter','\t','precision','%.6f');   
 end
 
-%collinearity
-files = dir('*pos_neg_PEs.dat');
-num_of_subjects = length(files);
-
-for index = 1:num_of_subjects
-    filename = files(index).name;
-    fprintf('File processing: %s\n', filename);
-    id = filename(isstrprop(filename,'digit'));
-    regressors = load(filename);
-    [R, P] = corrcoef(regressors(:,3:4));
-    corr_matrix(index) = R(1,2);
-end
+% %collinearity
+% files = dir('*pos_neg_PEs.dat');
+% num_of_subjects = length(files);
+% 
+% for index = 1:num_of_subjects
+%     filename = files(index).name;
+%     fprintf('File processing: %s\n', filename);
+%     id = filename(isstrprop(filename,'digit'));
+%     regressors = load(filename);
+%     [R, P] = corrcoef(regressors(:,3:4));
+%     corr_matrix(index) = R(1,2);
+% end
 
 
