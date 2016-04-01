@@ -1,4 +1,4 @@
-function  [fx,dfdx,dfdP] = f_trust_Qlearn1(x,theta,u,inF)
+function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 % evolution function of q-values of a RL agent (2-armed bandit problem)
 % [fx,dfdx,dfdP] = f_Qlearn2(x,P,u,in)
 % Here, there are only two q-values to evolve, i.e. there are only two
@@ -13,8 +13,16 @@ function  [fx,dfdx,dfdP] = f_trust_Qlearn1(x,theta,u,inF)
 %   - dfdx/dfdP: gradient of the q-values evolution function, wrt q-avlues
 %   and evolution parameter, respectively.F 
 
-r = 1; % when trustee shares the reward is $1.5, or for simplicity r = 1
+%r = 1; % when trustee shares the reward is $1.5, or for simplicity r = 1
 
+if (u(2)==1 && u(1)==1) %trustee shared, subject shared
+    r = 1.5;
+elseif (u(2)<1 && u(1) ==1) %trustee kept, subject shared
+    r = -1;
+elseif (u(2)<1 && u(1) <1) %trustee kept, subject kept
+    r = -1;
+else r = 0.5;
+end
 
 % theta(1) -- basic learning rate
 % theta(2) -- punishment sensitivity
@@ -27,7 +35,7 @@ else
     alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
 end
 % fx = 0;
-pe = u(2).*r-x(1); % prediction error
+pe = r-x(1); % prediction error
 
 %% introduce reputation sensitivity
 if inF.reputation_sensitive==1

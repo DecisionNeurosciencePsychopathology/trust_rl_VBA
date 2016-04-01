@@ -22,6 +22,7 @@ modelnames = {'ushifted_trust_Qlearning'};
 %% set parameters
 % nbasis = 4;
 % multinomial = 1;
+counter = 1;
 multisession = 0;
 fixed_params_across_runs = 1;
 sigma_kappa = 1;
@@ -45,15 +46,16 @@ parfor ct = 1:num_of_subjects
     filename=files(ct).name;
     fprintf('File processing: %s\n', filename);
     id = filename(isstrprop(filename,'digit'));
-    if not(strcmp(id, '212857') || strcmp(id,'881106') ||strcmp(id, '881209'))
+    if not(strcmp(id, '212857') || strcmp(id,'881106') ||strcmp(id, '881209') || strcmp(id, '219471'))
         %for m=1:length(modelnames)
             %[posterior(ct,m),out(ct,m)] = clock_sceptic_vba(id(ct),modelnames(m),nbasis, multinomial, multisession, fixed_params_across_runs, fit_propspread);
 %            [posterior(ct,5),out(ct,5)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
 %            [posterior(ct,1),out(ct,1)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
-             [posterior, out] = trust_Qlearning_ushifted(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+%            [posterior, out] = trust_Qlearning_ushifted(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+             [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);  
              L(ct) = out.F;
         %end
     end
 end
-L_name = sprintf('ushifted_L_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_beta0',multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+L_name = sprintf('L_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_beta0',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
 save(char(L_name), 'L');

@@ -24,3 +24,12 @@ old = load('L_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_
 Lold = old.L;
 
 [posterior,out] = VBA_groupBMC([Lnew; Lold]);
+
+clear all; close all;
+old = load('L_counter0_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n0_assymetry_choice0_beta0');
+Lold = old.L;
+
+new = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n0_assymetry_choice0_beta0');
+Lnew = new.L;
+
+[posterior,out] = VBA_groupBMC([Lnew; Lold]);

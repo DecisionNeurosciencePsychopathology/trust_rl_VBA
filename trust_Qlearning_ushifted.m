@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning_ushifted(id, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices)
+function [posterior,out] = trust_Qlearning_ushifted(id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -16,6 +16,8 @@ function [posterior,out] = trust_Qlearning_ushifted(id, multisession, fixed, sig
 if nargin<1
     error('*** Enter 6-digit subject ID ***')
 elseif nargin<2
+    error('*** Specify the f function type: counterfactuals or not ***')
+elseif nargin<3
     multisession = 0;
     fixed = 1;    
     reputation_sensitive = 0;
@@ -24,7 +26,7 @@ elseif nargin<2
     valence_p = 0;
     valence_n = 0;
     assymetry_choices = 0;
-elseif nargin<3
+elseif nargin<4
     fixed = 1;
     reputation_sensitive = 0;
     sigmakappa = 0;
@@ -32,14 +34,8 @@ elseif nargin<3
     valence_p = 0;
     valence_n = 0;
     assymetry_choices = 0;
-elseif nargin<4
-    sigmakappa = 0;
-    humanity = 0;
-    valence_p = 0;
-    valence_n = 0;
-    reputation_sensitive = 0;
-    assymetry_choices = 0;
 elseif nargin<5
+    sigmakappa = 0;
     humanity = 0;
     valence_p = 0;
     valence_n = 0;
@@ -49,15 +45,21 @@ elseif nargin<6
     humanity = 0;
     valence_p = 0;
     valence_n = 0;
+    reputation_sensitive = 0;
     assymetry_choices = 0;
 elseif nargin<7
-    valence_p =0;
+    humanity = 0;
+    valence_p = 0;
     valence_n = 0;
     assymetry_choices = 0;
 elseif nargin<8
+    valence_p =0;
     valence_n = 0;
     assymetry_choices = 0;
 elseif nargin<9
+    valence_n = 0;
+    assymetry_choices = 0;
+elseif nargin<10
     assymetry_choices = 0;
 end
 
@@ -67,7 +69,11 @@ close all
 
 
 %% Evolution and observation functions
-f_fname = @f_trust_Qlearn1; % evolution function (Q-learning) with a single hidden state, Q(share)
+if counter == 0
+    f_fname = @f_trust_Qlearn1; % evolution function (Q-learning) with a single hidden state, Q(share)
+else
+    f_fname = @f_trust_Qlearn_counter;% evolution function (Q-learning) with a single hidden state, Q(share), and counterfactual rewards
+end
 
 if assymetry_choices ==1
     g_fname=@g_trust_softmax1;      % observation function (softmax mapping), evaluates Q(share)
@@ -255,7 +261,7 @@ ConditionOrder  = unique(b.identity,'stable')
 out.design = ConditionOrder;
 
 h = figure(1);
-savefig(h,sprintf('ushifted_%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
+savefig(h,sprintf('%d_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, counter, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices));
 
 %% get prediction errors
 alpha = 1./(1+exp(-posterior.muTheta(1)));
@@ -266,7 +272,7 @@ else
 end
  
 
-filename = sprintf('ushifted_%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+filename = sprintf('%d_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', id, counter,multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
 save(filename); 
 
 %% get prediction error time course

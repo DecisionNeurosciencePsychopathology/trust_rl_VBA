@@ -10,13 +10,14 @@ else
     [~, me] = system('whoami');
     me = strtrim(me);
     if strcmp(me,'polinavanyukov')==1
-        datalocation = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/');
+        datalocation = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/models mat files/');
     else
         datalocation = glob('?');
     end
 end
 
 %% choose model's parameters
+counter = 1;
 multisession = 0;
 fixed_params_across_runs = 1;
 sigma_kappa = 1;
@@ -28,15 +29,20 @@ assymetry_choices = 0;
 
 % get ID list
 cd(datalocation{1});
-files = dir(strcat('ushifted*',sprintf('_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices),'.mat'));
+files = dir(strcat('*',sprintf('counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d', counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices),'.mat'));
 num_of_subjects = length(files);
-M=zeros(num_of_subjects,192);
+M=zeros(num_of_subjects,192); %PEs
+N=zeros(num_of_subjects,193); %value
 for ct = 1:num_of_subjects
     filename=files(ct).name;
     fprintf('File processing: %s\n', filename);
     id = filename(isstrprop(filename,'digit'));
     load(filename);
     M(ct,:) = [id, out.suffStat.PE];
+%    N(ct,:) = [id, out.suffStat.muX];
 end
-M_name = sprintf('shiftedPEs_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d',multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+M_name = sprintf('PEs_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
 save(char(M_name), 'M');
+
+%N_name = sprintf('values_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+%save(char(N_name), 'N');
