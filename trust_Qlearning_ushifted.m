@@ -151,8 +151,7 @@ index_vector([1,1+blocklength,1+2*blocklength, 1+3*blocklength],1) = 1;
 u(4,:) = index_vector;
 
 y = u(1,:); %the subject's actions
-%u = [zeros(7,1) u(:,2:end)];
-%u(2,:) = [0 u(2,1:end-1)];
+%shifting u
 u = [zeros(7,1) u(:,1:end-1)];
 %u(1:7, noresponse'==1) = -999;
 

@@ -36,7 +36,7 @@ assymetry_choices = 0;
 cd(datalocation{1});
 files = dir('trust*.mat');
 num_of_subjects = length(files);
-%ids = cellstr(NaN(num_of_subjects,1));
+%ids = cellstr(NaN(num_of_subjects,1))
 
 %% main loop
 %posterior = struct([length(datalocation),length(modelnames)]);
