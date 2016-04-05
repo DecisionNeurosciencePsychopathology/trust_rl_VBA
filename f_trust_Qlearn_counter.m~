@@ -15,7 +15,7 @@ function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 
 %r = 1; % when trustee shares the reward is $1.5, or for simplicity r = 1
 % theta(1) -- basic learning rate
-% theta(2) -- punishment sensitivity or reality of rewards parameter
+% theta(2) -- punishment sensitivity
 
 
 if (u(2)==1 && u(1)==1) %trustee shared, subject shared
@@ -27,12 +27,11 @@ elseif (u(2)<1 && u(1) <1) %trustee kept, subject kept
 else r = 0.5;
 end
 
-% a parameter the modulates the "reality" of rewards wrt "share" action
 if inF.utility == 1
-    if (u(2)<1 && u(1) <1)          %trustee kept, subject kept
+    if (u(2)<1 && u(1) ==1) %trustee kept, subject shared
         r = -1 * theta(2);
-    elseif  (u(2)==1 && u(1) <1)    %trustee shared, subject kept
-        r = 0.5 * theta(2);
+    elseif  (u(2)==1 && u(1) <1) %trustee shared, subject kept
+        r = -1
     end
 end
 

@@ -33,3 +33,25 @@ new = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_va
 Lnew = new.L;
 
 [posterior,out] = VBA_groupBMC([Lnew; Lold]);
+
+L_c1m0r0h0p0n0a0 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n0_assymetry_choice0_beta0');
+L_c1m1r0h0p0n0a0 = load('L_counter1_multisession1_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n0_assymetry_choice0_beta0');
+L_c1m0r1h0p0n0a0 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation1_humanity0_valence_p0_valence_n0_assymetry_choice0_beta0');
+L_c1m0r0h1p0n0a0 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity1_valence_p0_valence_n0_assymetry_choice0_beta0');
+L_c1m0r0h0p1n0a0 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p1_valence_n0_assymetry_choice0_beta0');
+L_c1m0r0h0p0n1a0 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n1_assymetry_choice0_beta0');
+L_c1m0r0h0p0n0a1 = load('L_counter1_multisession0_fixed1_SigmaKappa1_reputation0_humanity0_valence_p0_valence_n0_assymetry_choice1_beta0');
+
+Lgood = [L_c1m0r0h0p0n0a0.L;L_c1m0r1h0p0n0a0.L;L_c1m0r0h1p0n0a0.L;L_c1m0r0h0p1n0a0.L;L_c1m0r0h0p0n1a0.L;L_c1m0r0h0p0n0a1.L];
+
+[posterior,out] = VBA_groupBMC(Lgood);
+
+Lgood = [L_c1m0r0h0p0n0a0.L;L_c1m0r1h0p0n0a0.L;L_c1m0r0h1p0n0a0.L];
+
+[posterior,out] = VBA_groupBMC(Lgood);
+
+Lgood = [L_c1m0r1h0p0n0a0.L;L_c1m0r0h1p0n0a0.L];
+
+[posterior,out] = VBA_groupBMC(Lgood([1,2],:));
+
+Lgood = [L_c1m0r1h0p0n0a0.L;L_c1m0r0h1p0n0a0.L;L_c1m0r0h0p1n0a0.L;L_c1m0r0h0p0n1a0.L;L_c1m0r0h0p0n0a1.L];

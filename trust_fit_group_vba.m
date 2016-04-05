@@ -22,15 +22,16 @@ modelnames = {'ushifted_trust_Qlearning'};
 %% set parameters
 % nbasis = 4;
 % multinomial = 1;
-counter = 1;
-multisession = 0;
-fixed_params_across_runs = 1;
-sigma_kappa = 1;
-reputation_sensitive = 0;
-humanity = 0;
-valence_p = 0;
-valence_n = 0;
-assymetry_choices = 0;
+counter = 1;                    %using counterfactual feedback
+multisession = 0;               %modelling runs separately
+fixed_params_across_runs = 1;   
+sigma_kappa = 1;                %kappa (or action bias) parameter
+reputation_sensitive = 0;       %modelling trustees' reputation
+humanity = 0;                   %modelling humanity
+valence_p = 0;                  %modelling valence of trustees
+valence_n = 0;                  
+assymetry_choices = 0;          %modelling assymetry in choices
+utility = 1;
 
 % get ID list
 cd(datalocation{1});
@@ -52,10 +53,10 @@ parfor ct = 1:num_of_subjects
 %            [posterior(ct,5),out(ct,5)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
 %            [posterior(ct,1),out(ct,1)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
 %            [posterior, out] = trust_Qlearning_ushifted(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
-             [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);  
+             [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, utility);  
              L(ct) = out.F;
         %end
     end
 end
-L_name = sprintf('L_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_beta0',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
+L_name = sprintf('L_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_beta0',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, utility);
 save(char(L_name), 'L');
