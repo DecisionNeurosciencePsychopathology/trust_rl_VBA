@@ -16,7 +16,7 @@ dQ = x(1);
 
 % dQ = (x(1)-x(2));
 gx = sig(kappa + beta*dQ);
-dgdx = zeros(size(x,1),1);
+dgdx = zeros(size(x,1),1); % for value tracking only
+% dgdx = zeros(size(1,1),1);  % for value + pe tracking
 dgdx(1) = beta*gx*(1-gx);
-% dgdx(2) = -beta*gx*(1-gx);
 % dgdP(1) = beta*dQ*gx*(1-gx);

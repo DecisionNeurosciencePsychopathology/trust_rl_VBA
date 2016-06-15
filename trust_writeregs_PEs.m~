@@ -61,8 +61,7 @@ grpvalues = values.N;
 grpcalcpes = calcpes.P;
 
 cd(regs_location{1})
-%files = dir('*feedback_Times.dat');
-files = dir('*decision_Times.dat');
+files = dir('*feedback_Times.dat');
 num_of_subjects = length(files);
 
 %for index = [10, 13, 50]
@@ -72,8 +71,7 @@ for index = 1:num_of_subjects
     id = filename(isstrprop(filename,'digit'));
     if not(str2double(id)==202021||str2double(id)==219956||str2double(id)==220017||...
            str2double(id)==210381||str2double(id)==211669||str2double(id)==216806||...
-           str2double(id)==211038||str2double(id)==881100||str2double(id)==220024||...
-           str2double(id)==220244||str2double(id)==881209)
+           str2double(id)==211038||str2double(id)==881100||)
         if str2double(id) == 46069
             subject = load(strcat(matf_location{1},'trust0',id));
         else
@@ -336,27 +334,27 @@ for index = 1:num_of_subjects
 %          dlmwrite([write_location '/trust' id 'oldPEs' '.dat'], oldpes,'delimiter','\t','precision','%.6f');
 %           dlmwrite([write_location '/trust' id 'values' '.dat'], values,'delimiter','\t','precision','%.6f');
 %           dlmwrite([write_location '/trust' id 'values_abs' '.dat'], values_abs,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'PPEs' '.dat'], ppes,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'BAxPPEs' '.dat'],ppesxBA,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'GBxPPEs' '.dat'],ppesxGB,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'G0xPPEs' '.dat'],ppesxG0,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'HCxPPEs' '.dat'],ppesxHC,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEs' '.dat'], ppes,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPPEs' '.dat'],ppesxBA,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'GBxPPEs' '.dat'],ppesxGB,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'G0xPPEs' '.dat'],ppesxG0,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'HCxPPEs' '.dat'],ppesxHC,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxp_decision' '.dat'],ppesxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxBAxp_decision' '.dat'],ppesxBAxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxGBxp_decision' '.dat'],ppesxGBxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision' '.dat'],ppesxG0xp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision' '.dat'],ppesxHCxp_decision,'delimiter','\t','precision','%.6f');
 %            
-%            dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'G0xPEs' '.dat'],pesxG0,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'HCxPEs' '.dat'],pesxHC,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxp_decision' '.dat'],pesxp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxBAxp_decision' '.dat'],pesxBAxp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxGBxp_decision' '.dat'],pesxGBxp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxG0xp_decision' '.dat'],pesxG0xp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxHCxp_decision' '.dat'],pesxHCxp_decision,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'G0xPEs' '.dat'],pesxG0,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'HCxPEs' '.dat'],pesxHC,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEsxp_decision' '.dat'],pesxp_decision,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEsxBAxp_decision' '.dat'],pesxBAxp_decision,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEsxGBxp_decision' '.dat'],pesxGBxp_decision,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEsxG0xp_decision' '.dat'],pesxG0xp_decision,'delimiter','\t','precision','%.6f');
+           dlmwrite([write_location '/trust' id 'PEsxHCxp_decision' '.dat'],pesxHCxp_decision,'delimiter','\t','precision','%.6f');
 %          dlmwrite([write_location '/trust' id 'NPEs' '.dat'], pes_neg,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f'); 
 % %         dlmwrite([write_location '/trust' id 'HCbyPEs' '.dat'],pes_HC,'delimiter','\t','precision','%.6f'); 
