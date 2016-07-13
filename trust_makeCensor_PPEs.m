@@ -75,15 +75,15 @@ frequency_scale_hz = 10;
 % output will be in the scale of X Hz.
 bin_size = 1/frequency_scale_hz*1000; % convert Hz to ms
 
-for index = 24
+for index = 11
 %for index=1:num_of_subjects
     filename = files(index).name;
     fprintf('File processing: %s\n', filename);
     id = filename(isstrprop(filename,'digit'));
     if not(str2double(id)==219956||str2double(id)==220017 ...
         ||str2double(id)==210381||str2double(id)==211669||str2double(id)==216806 ...
-        ||str2double(id)==881100||str2double(id)==211038||str2double(id)==220024 ...
-        ||str2double(id)==220244||str2double(id)==881209)
+        ||str2double(id)==881100||str2double(id)==220024 ...
+        ||str2double(id)==220244||str2double(id)==881209||str2double(id)==208572)
         subject = load(strcat(matf_location{1},'trust',id));
         b.regs = [];    
        if not(isfield(subject.b, 'decisions'))
@@ -107,6 +107,16 @@ for index = 24
        PPES_rows = pes > 0; 
        notPPES_rows = pes < 0;
        
+       %% PEs decision-aligned
+       pes_decision = pes;
+       pes_decision = circshift(pes,1);
+       pes_decision(1) = 0;
+       %plot(pes(1:48)); hold on; plot(pes_decision(1:48),'r');
+       ppes_rows_dec = pes_decision > 0;
+       ppes_decision = pes_decision;
+       ppes_decision(not(ppes_rows_dec)) = 0;
+       
+       %% GB rows
        GB_rows = strcmp(subject.b.identity,'good') | strcmp(subject.b.identity,'bad');
        notGB_rows = ~GB_rows;
               
@@ -149,6 +159,9 @@ for index = 24
         not_miss_n_PPEs = notmissed_trials.*PPES_rows;
         not_miss_n_PPEs_GB = notmissed_trials.*PPES_rows.*GB_rows;
         
+        missed_OR_notPPEs_dec = missed_trials|not(ppes_rows_dec);
+        not_miss_AND_ppes = not(missed_trials|not(ppes_rows_dec));
+        
         %plot(b.notmissed_trials);
         trial1_index = 1;
         trial48_index = 48;
@@ -185,14 +198,22 @@ for index = 24
             %% modify as in main script to include ITIs          
 %                 tmp_reg.(['regressors' num2str(block)]).to_censor_PPE = createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, not_miss_n_PPEs(trial1_index:trial48_index)); 
 %                 tmp_reg.(['regressors' num2str(block)]).to_censor_PPE_GB = createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, not_miss_n_PPEs_n_GB(trial1_index:trial48_index));  
-            %% modified by AD to include ITI
-            if(sum(missed_n_notPPEs(trial1_index:trial48_index))) > 0
+            %% modified by AD to include ITI           
+            %for PPEs not decision aligned 
+            %logical_test = sum(missed_n_notPPEs(trial1_index:trial48_index));
+            %include_trials = missed_n_notPPEs(trial1_index:trial48_index);
+            
+            %for PPEs decision aligned
+            logical_test = sum(missed_OR_notPPEs_dec(trial1_index:trial48_index));
+            include_trials = missed_OR_notPPEs_dec(trial1_index:trial48_index);
+            
+            if(logical_test) > 0
                 % write 1s for missed trials and not PPEs to censor
-                tmp_reg.(['regressors' num2str(block)]).to_censor = createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, missed_n_notPPEs(trial1_index:trial48_index));
+                tmp_reg.(['regressors' num2str(block)]).to_censor = createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, include_trials);
                 %tmp_reg.(['regressors' num2str(block)]).to_censor_PPE_GB = createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, missed_n_notPPEs_notGB(trial1_index:trial48_index));
             else
                 % write a vector of 0s the size of regressors
-                tmp_reg.(['regressors' num2str(block)]).to_censor = zeros(size(createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, not_miss_n_PPEs(trial1_index:trial48_index))));
+                tmp_reg.(['regressors' num2str(block)]).to_censor = zeros(size(createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, not(include_trials))));
                 %tmp_reg.(['regressors' num2str(block)]).to_censor_PPE_GB = zeros(size(createSimpleRegressor(taskness.event_beg,taskness.event_end, epoch_window, not_miss_n_PPEs_GB(trial1_index:trial48_index))));
             end
             % flip to_censor
@@ -260,7 +281,7 @@ for index = 24
         %to_censor_PPE_GB = [tmp_reg.regressors1.to_censor_PPE_GB tmp_reg.regressors2.to_censor_PPE_GB tmp_reg.regressors3.to_censor_PPE_GB tmp_reg.regressors4.to_censor_PPE_GB];
         to_censor_PPE = transpose(to_censor_PPE);
         %to_censor_PPE_GB = transpose(to_censor_PPE_GB);
-        gdlmwrite(strcat(write_location,num2str(id),'to_censor_PPEs'),to_censor_PPE,'\t');
+        gdlmwrite(strcat(write_location,num2str(id),'to_censor_PPEs_dec'),to_censor_PPE,'\t');
         %gdlmwrite(strcat(write_location,num2str(id),'to_censor_PPEs_GB'),to_censor_PPE_GB,'\t');
     end
 end

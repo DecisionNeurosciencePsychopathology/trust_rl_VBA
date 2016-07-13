@@ -61,18 +61,18 @@ grpvalues = values.N;
 grpcalcpes = calcpes.P;
 
 cd(regs_location{1})
-%files = dir('*feedback_Times.dat');
-files = dir('*decision_Times.dat');
+files = dir('*feedback_Times.dat');
+%files = dir('*decision_Times.dat');
 num_of_subjects = length(files);
 
-%for index = [10, 13, 50]
-for index = 1:num_of_subjects    
+for index = 60
+%for index = 1:num_of_subjects    
     filename=files(index).name;
     fprintf('File processing: %s\n', filename);
     id = filename(isstrprop(filename,'digit'));
     if not(str2double(id)==202021||str2double(id)==219956||str2double(id)==220017||...
            str2double(id)==210381||str2double(id)==211669||str2double(id)==216806||...
-           str2double(id)==211038||str2double(id)==881100||str2double(id)==220024||...
+           str2double(id)==881100||str2double(id)==220024||...
            str2double(id)==220244||str2double(id)==881209)
         if str2double(id) == 46069
             subject = load(strcat(matf_location{1},'trust0',id));
@@ -206,36 +206,46 @@ for index = 1:num_of_subjects
        calcpes(kept) = calcpes(kept)*-1;
 %       oldpes(kept) = oldpes(kept)*-1;
 
-
        %% value and PE assembly w/ time epochs
        % Shortening PEs to 192 trials      
        pes = pes(1:192);
        calcpes = calcpes(1:192);
        values = values(1:192);
        values_abs=abs(values);
-       %% VALIDATED UP TO THIS POINT WITH SIGNED PE MAPS
        
+       %% PE, values and PPEs aligned w/ decision of trial t + 1
+       pes_decision = pes;
+       pes_decision = circshift(pes,1);
+       pes_decision(1) = 0;
+       %plot(pes(1:48)); hold on; plot(pes_decision(1:48),'r');
+       ppes_rows_dec = pes_decision > 0;
+       ppes_decision = pes_decision;
+       ppes_decision(not(ppes_rows_dec)) = 0;
+       values_dec = values;
+       values_dec = circshift(values,1);
+              
+       %% VALIDATED UP TO THIS POINT WITH SIGNED PE MAPS       
        PPES_rows = pes > 0; 
        ppes = pes;
        ppes(not(PPES_rows)) = 0;
        
        pes = [regressors(:,1:2), pes];
        calcpes = [regressors(:,1:2), calcpes];
-%       oldpes = [regressors(:,1:2), oldpes];
+       %oldpes = [regressors(:,1:2), oldpes];
        ppes = [regressors(:,1:2), ppes];
        %ppes2 = [regressors(:,1:2), ppes];
        values = [regressors(:,1:2), values];
        values_abs = [regressors(:,1:2), values_abs];
+       values_dec_abs = abs(values_dec);
       
-%% Interaction regressors - need to update w/ new PEs          
+%% Interaction regressors        
 %% 2-way interactions
-%         pesxGB = [regressors(:, 1:2), pes_actions(:,3).* trustee_GB];
-%         pesxHC = [regressors(:, 1:2), pes_actions(:,3).* trustee_HC];
           pesxBA = [regressors(:, 1:2), pes(:,3).* trustee_BA];
           pesxGB = [regressors(:, 1:2), pes(:,3).* trustee_GB];
           pesxG0 = [regressors(:, 1:2), pes(:,3).* trustee_G0];
-          pesxHC = [regressors(:, 1:2), pes(:,3).* trustee_HC];
-          
+          pesxHC = [regressors(:, 1:2), pes(:,3).* trustee_HC];         
+          pesxTrial = pes(:,3).*(1:192)';
+
           ppesxBA = [regressors(:, 1:2), ppes(:,3).* trustee_BA];
           ppesxGB = [regressors(:, 1:2), ppes(:,3).* trustee_GB];
           ppesxG0 = [regressors(:, 1:2), ppes(:,3).* trustee_G0];
@@ -245,9 +255,20 @@ for index = 1:num_of_subjects
           pesxp_decision = [regressors(:, 1:2), pes(:,3).* shareVSkeep]; 
           ppesxp_decision =  [regressors(:, 1:2), ppes(:,3).* shareVSkeep];
           
-%         pesxtaction = [regressors(:, 1:2), pes(:,3).* trustee_action];           
-%         pes_posxtaction = [regressors(:, 1:2), pes_pos.* trustee_action];        
-%         pesxGBxtaction =[regressors(:, 1:2), pesxGB(:,3).*trustee_action];
+          pes_decxBA = pes_decision.* trustee_BA;
+          pes_decxGB = pes_decision.* trustee_GB;
+          pes_decxG0 = pes_decision.* trustee_G0;
+          pes_decxHC = pes_decision.* trustee_HC;
+          pes_decxpdecision = pes_decision.*shareVSkeep;
+          pes_decxblockOrder = pes_decision.*[ones(48,1); 2*ones(48,1); 3*ones(48,1); 4*ones(48,1)];
+          
+          ppes_decxBA = ppes_decision.* trustee_BA;
+          ppes_decxGB = ppes_decision.* trustee_GB;
+          ppes_decxG0 = ppes_decision.* trustee_G0;
+          ppes_decxHC = ppes_decision.* trustee_HC;
+          ppes_decxpdecision = ppes_decision.*shareVSkeep;
+          
+                              
         %% 3-way interactions
           pesxBAxp_decision =[regressors(:, 1:2), pesxBA(:,3).*shareVSkeep];
           pesxGBxp_decision =[regressors(:, 1:2), pesxGB(:,3).*shareVSkeep];
@@ -258,11 +279,18 @@ for index = 1:num_of_subjects
           ppesxGBxp_decision =[regressors(:, 1:2), ppesxGB(:,3).*shareVSkeep];
           ppesxG0xp_decision =[regressors(:, 1:2), ppesxG0(:,3).*shareVSkeep];
           ppesxHCxp_decision =[regressors(:, 1:2), ppesxHC(:,3).*shareVSkeep];
-%          ppes2xBAxp_decision = [regressors(:, 1:2), ppes2xBA(PPEs_rows,3).* shareVSkeep];
-%         pesxBAxtaction =[regressors(:, 1:2), pesxBA(:,3).*trustee_action];
-%         pes_posxGBxtaction = [regressors(:, 1:2), pes_posxGB(:,3).*trustee_action];
-%         pes_posxBAxtaction = [regressors(:, 1:2), pes_posxBA(:,3).*trustee_action];
-%         
+          
+          pes_decxBAxpdecision = pes_decxBA.*shareVSkeep;
+          pes_decxGBxpdecision = pes_decxGB.*shareVSkeep;
+          pes_decxG0xpdecision = pes_decxG0.*shareVSkeep;
+          pes_decxHCxpdecision = pes_decxHC.*shareVSkeep;
+          pes_decxBAxOrder = pes_decxBA.*[ones(48,1); 2*ones(48,1); 3*ones(48,1); 4*ones(48,1)];
+          
+          ppes_decxBAxpdecision = ppes_decxBA.*shareVSkeep;
+          ppes_decxGBxpdecision = ppes_decxGB.*shareVSkeep;
+          ppes_decxG0xpdecision = ppes_decxG0.*shareVSkeep;
+          ppes_decxHCxpdecision = ppes_decxHC.*shareVSkeep;
+         
         %% MEAN_CENTERING
         GB_rows = not(trustee_GB == 0);
         
@@ -270,6 +298,7 @@ for index = 1:num_of_subjects
          pesxGB(GB_rows,3) = pesxGB(GB_rows,3) - mean(pesxGB(GB_rows,3));
          pesxG0(:,3) = pesxG0(:,3) - mean(pesxG0(:,3));
          pesxHC(:,3) = pesxHC(:,3) - mean(pesxHC(:,3));
+         pesxTrial = pesxTrial - mean(pesxTrial);
          
          pesxp_decision(:,3) = pesxp_decision(:,3) - mean(pesxp_decision(:,3));
          pesxBAxp_decision(:,3) = pesxBAxp_decision(:,3) - mean(pesxBAxp_decision(:,3));
@@ -288,26 +317,43 @@ for index = 1:num_of_subjects
          ppesxGBxp_decision(PPES_rows,3) = ppesxGBxp_decision(PPES_rows,3) - mean(ppesxGBxp_decision(PPES_rows & GB_rows,3));
          ppesxG0xp_decision(PPES_rows,3) = ppesxG0xp_decision(PPES_rows,3) - mean(ppesxG0xp_decision(PPES_rows,3));
          ppesxHCxp_decision(PPES_rows,3) = ppesxHCxp_decision(PPES_rows,3) - mean(ppesxHCxp_decision(PPES_rows,3));
-
-%         pesxtaction(1:length(pes),3) = pesxtaction(1:length(pes),3) - mean(pesxtaction(1:length(pes),3));
-%         pes_pos(rows_PEsPOS) = pes_pos(rows_PEsPOS) -mean(pes_pos(rows_PEsPOS));
-%         pes_pos = [regressors(:,1:2),pes_pos];
-%         pes_neg(not(rows_PEsPOS)) = pes_neg(not(rows_PEsPOS)) - mean(pes_neg(not(rows_PEsPOS)));
-%         pes_neg = [regressors(:,1:2), pes_neg];
-%         pes_signed(1:total_trials-1,3) = pes_signed(1:total_trials-1,3) - mean(pes_signed(1:total_trials-1,3));  
-%         pes_unsigned = [regressors(:,1:2), abs(pes)];
-%         pes_unsigned(1:total_trials-1,3) = abs(pes_unsigned(1:total_trials-1,3) - mean(pes_unsigned(1:total_trials-1,3)));  
-%         pes_actions(1:total_trials-1,3) = pes_actions(1:total_trials-1,3) - mean(pes_actions(1:total_trials-1,3));  
-        
         
 %        oldpes(1:length(oldpes),3) = oldpes(1:length(oldpes),3) - mean(oldpes(1:length(oldpes),3));
-        pes(:,3) = pes(:,3) - mean(pes(:,3)); 
-        ppes(PPES_rows,3) = ppes(PPES_rows,3) - mean(ppes(PPES_rows,3)); 
-%        ppes2(:,3) = ppes2(:,3) - mean(ppes2(:,3)); 
-        
-        calcpes(1:length(calcpes),3) = calcpes(1:length(calcpes),3) - mean(calcpes(1:length(calcpes),3));
-        values(1:length(values),3) = values(1:length(values),3) - mean(values(1:length(values),3));
-        values_abs(1:length(values_abs),3) = values_abs(1:length(values_abs),3) - mean(values_abs(1:length(values_abs),3));
+         pes(:,3) = pes(:,3) - mean(pes(:,3)); 
+         ppes(PPES_rows,3) = ppes(PPES_rows,3) - mean(ppes(PPES_rows,3)); 
+%        ppes2(:,3) = ppes2(:,3) - mean(ppes2(:,3));         
+         calcpes(1:length(calcpes),3) = calcpes(1:length(calcpes),3) - mean(calcpes(1:length(calcpes),3));
+         values(1:length(values),3) = values(1:length(values),3) - mean(values(1:length(values),3));
+         values_abs(1:length(values_abs),3) = values_abs(1:length(values_abs),3) - mean(values_abs(1:length(values_abs),3));
+         
+         values_dec = values_dec - mean(values_dec);
+         values_dec_abs = values_dec_abs - mean(values_dec_abs);
+ 
+         
+         pes_decision = pes_decision - mean(pes_decision([2:48 50:96 98:144 146:192]));
+         pes_decxBA = pes_decxBA - mean(pes_decxBA([2:48 50:96 98:144 146:192]));
+         pes_decxGB = pes_decxGB - mean(pes_decxGB([2:48 50:96 98:144 146:192]));
+         pes_decxG0 = pes_decxG0 - mean(pes_decxG0([2:48 50:96 98:144 146:192]));
+         pes_decxHC = pes_decxHC - mean(pes_decxHC([2:48 50:96 98:144 146:192]));
+         pes_decxpdecision = pes_decxpdecision - mean(pes_decxpdecision([2:48 50:96 98:144 146:192]));
+         pes_decxblockOrder = pes_decxblockOrder - mean(pes_decxblockOrder([2:48 50:96 98:144 146:192]));
+  
+         pes_decxBAxpdecision = pes_decxBAxpdecision - mean(pes_decxBAxpdecision([2:48 50:96 98:144 146:192]));
+         pes_decxGBxpdecision = pes_decxGBxpdecision - mean(pes_decxGBxpdecision([2:48 50:96 98:144 146:192]));
+         pes_decxG0xpdecision = pes_decxG0xpdecision - mean(pes_decxG0xpdecision([2:48 50:96 98:144 146:192]));
+         pes_decxHCxpdecision = pes_decxHCxpdecision - mean(pes_decxHCxpdecision([2:48 50:96 98:144 146:192]));
+         pes_decxBAxOrder = pes_decxBAxOrder - mean(pes_decxBAxOrder([2:48 50:96 98:144 146:192]));
+         
+         ppes_decision = ppes_decision - mean(ppes_decision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxBA = ppes_decxBA - mean(ppes_decxBA(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxGB = ppes_decxGB - mean(ppes_decxGB(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxG0 = ppes_decxG0 - mean(ppes_decxG0(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxHC = ppes_decxHC - mean(ppes_decxHC(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxpdecision = ppes_decxpdecision - mean(pes_decxpdecision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxBAxpdecision = ppes_decxBAxpdecision - mean(ppes_decxBAxpdecision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxGBxpdecision = ppes_decxGBxpdecision - mean(ppes_decxGBxpdecision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxG0xpdecision = ppes_decxG0xpdecision - mean(ppes_decxG0xpdecision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
+         ppes_decxHCxpdecision = ppes_decxHCxpdecision - mean(ppes_decxHCxpdecision(intersect([2:48 50:96 98:144 146:192],find(ppes_rows_dec==1))));
        
 %        figure(96); clf;
 %        subplot(3,1,1);
@@ -327,45 +373,59 @@ for index = 1:num_of_subjects
             
         
         %% writing PEs
-%         dlmwrite([write_location '/trust' id 'unsignedPEs' '.dat'],pes_unsigned,'delimiter','\t','precision','%.6f');
-%         dlmwrite([write_location '/trust' id 'signedPEs' '.dat'],pes_signed,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'action_PEs' '.dat'], pes_actions,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'calcPEs' '.dat'], calcpes,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'oldPEs' '.dat'], oldpes_align2new,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'modelPEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'oldPEs' '.dat'], oldpes,'delimiter','\t','precision','%.6f');
 %           dlmwrite([write_location '/trust' id 'values' '.dat'], values,'delimiter','\t','precision','%.6f');
 %           dlmwrite([write_location '/trust' id 'values_abs' '.dat'], values_abs,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'PPEs' '.dat'], ppes,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'BAxPPEs' '.dat'],ppesxBA,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'GBxPPEs' '.dat'],ppesxGB,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'G0xPPEs' '.dat'],ppesxG0,'delimiter','\t','precision','%.6f');
-           dlmwrite([write_location '/trust' id 'HCxPPEs' '.dat'],ppesxHC,'delimiter','\t','precision','%.6f');
+
+%           dlmwrite([write_location '/trust' id 'values_dec' '.dat'],[regressors(:, 1:2) values_dec],'delimiter','\t','precision','%.6f');
+%           dlmwrite([write_location '/trust' id 'values_abs_dec' '.dat'],[regressors(:, 1:2) values_dec_abs],'delimiter','\t','precision','%.6f');
+
+%            dlmwrite([write_location '/trust' id 'PPEs' '.dat'], ppes,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPPEs' '.dat'],ppesxBA,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'GBxPPEs' '.dat'],ppesxGB,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'G0xPPEs' '.dat'],ppesxG0,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'HCxPPEs' '.dat'],ppesxHC,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxp_decision' '.dat'],ppesxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxBAxp_decision' '.dat'],ppesxBAxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxGBxp_decision' '.dat'],ppesxGBxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision' '.dat'],ppesxG0xp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision' '.dat'],ppesxHCxp_decision,'delimiter','\t','precision','%.6f');
-%            
+
+%            dlmwrite([write_location '/trust' id 'PPEs_d' '.dat'], [regressors(:, 1:2) ppes_decision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPPEs_d' '.dat'],[regressors(:, 1:2) ppes_decxBA],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'GBxPPEs_d' '.dat'],[regressors(:, 1:2) ppes_decxGB],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'G0xPPEs_d' '.dat'],[regressors(:, 1:2) ppes_decxG0],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'HCxPPEs_d' '.dat'],[regressors(:, 1:2) ppes_decxHC],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEsxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEsxBAxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxBAxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEsxGBxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxGBxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxG0xpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxHCxpdecision],'delimiter','\t','precision','%.6f');
+% 
 %            dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'G0xPEs' '.dat'],pesxG0,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'HCxPEs' '.dat'],pesxHC,'delimiter','\t','precision','%.6f');
+             dlmwrite([write_location '/trust' id 'PEsxtrial' '.dat'],[regressors(:,1:2) pesxTrial],'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PEsxp_decision' '.dat'],pesxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PEsxBAxp_decision' '.dat'],pesxBAxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PEsxGBxp_decision' '.dat'],pesxGBxp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PEsxG0xp_decision' '.dat'],pesxG0xp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxHCxp_decision' '.dat'],pesxHCxp_decision,'delimiter','\t','precision','%.6f');
-%          dlmwrite([write_location '/trust' id 'NPEs' '.dat'], pes_neg,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f'); 
-% %         dlmwrite([write_location '/trust' id 'HCbyPEs' '.dat'],pes_HC,'delimiter','\t','precision','%.6f'); 
-%            dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');            
-%            dlmwrite([write_location '/trust' id 'PEsxp_decision' '.dat'],pesxp_decision,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxTaction' '.dat'],pesxtaction,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxGBxTaction' '.dat'],pesxGBxtaction,'delimiter','\t','precision','%.6f');
-%            dlmwrite([write_location '/trust' id 'PEsxBAxp_decision' '.dat'],pesxBAxp_decision,'delimiter','\t','precision','%.6f');
-%         dlmwrite([write_location '/trust' id 'PEsbyTrusteeSurveyGB' '.dat'],pes_surveyGB,'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxHCxp_decision' '.dat'],pesxHCxp_decision,'delimiter','\t','precision','%.6f');           
+
+%            dlmwrite([write_location '/trust' id 'PEs_d' '.dat'],[regressors(:, 1:2) pes_decision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxBA],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'GBxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxGB],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'G0xPEs_d' '.dat'],[regressors(:, 1:2) pes_decxG0],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'HCxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxHC],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxpdecision_d' '.dat'],[regressors(:, 1:2) pes_decxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxBAxpdecision_d' '.dat'],[regressors(:, 1:2) pes_decxBAxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxGBxpdecision_d' '.dat'],[regressors(:, 1:2) pes_decxGBxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxG0xpdecision_d' '.dat'],[regressors(:, 1:2) pes_decxG0xpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxHCxpdecision_d' '.dat'],[regressors(:, 1:2) pes_decxHCxpdecision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEsxOrder_d' '.dat'],[regressors(:, 1:2) pes_decxblockOrder],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPEsxOrder_d' '.dat'],[regressors(:, 1:2) pes_decxBAxOrder],'delimiter','\t','precision','%.6f');
+
     end
     close all;
 end
