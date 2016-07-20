@@ -15,7 +15,7 @@ else
         oldpe_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/group_data/');
         pe_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/');
         matf_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/');
-        regs_location= glob('/Users/polinavanyukov/Box Sync/Project Trust Game/regs/July 17/');
+        regs_location= glob('/Users/polinavanyukov/Box Sync/Project Trust Game/regs/global timings regs/');
         write_location=strcat('/Users/polinavanyukov/Box Sync/Project Trust Game/regs/',date);
     else
         pe_location = glob('?');
@@ -61,8 +61,8 @@ grpvalues = values.N;
 grpcalcpes = calcpes.P;
 
 cd(regs_location{1})
-files = dir('*feedback_Times.dat');
-%files = dir('*decision_Times.dat');
+files = dir('*gt_feedback_Times.dat');
+%files = dir('*gt_decision_Times.dat');
 num_of_subjects = length(files);
 
 %for index = 60
@@ -401,8 +401,8 @@ for index = 1:num_of_subjects
 %            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxG0xpdecision],'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxHCxpdecision],'delimiter','\t','precision','%.6f');
 % 
-             dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
-%             dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
+            dlmwrite([write_location '/trust' id 'gt_PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
+            dlmwrite([write_location '/trust' id 'gt_BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'G0xPEs' '.dat'],pesxG0,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'HCxPEs' '.dat'],pesxHC,'delimiter','\t','precision','%.6f');
@@ -413,8 +413,8 @@ for index = 1:num_of_subjects
 %            dlmwrite([write_location '/trust' id 'PEsxG0xp_decision' '.dat'],pesxG0xp_decision,'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'PEsxHCxp_decision' '.dat'],pesxHCxp_decision,'delimiter','\t','precision','%.6f');           
 
-%           dlmwrite([write_location '/trust' id 'PEs_d' '.dat'],[regressors(:, 1:2) pes_decision],'delimiter','\t','precision','%.6f');
-%           dlmwrite([write_location '/trust' id 'BAxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxBA],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'PEs_d' '.dat'],[regressors(:, 1:2) pes_decision],'delimiter','\t','precision','%.6f');
+%            dlmwrite([write_location '/trust' id 'BAxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxBA],'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'GBxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxGB],'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'G0xPEs_d' '.dat'],[regressors(:, 1:2) pes_decxG0],'delimiter','\t','precision','%.6f');
 %            dlmwrite([write_location '/trust' id 'HCxPEs_d' '.dat'],[regressors(:, 1:2) pes_decxHC],'delimiter','\t','precision','%.6f');
@@ -430,17 +430,21 @@ for index = 1:num_of_subjects
     close all;
 end
 
-%collinearity
-% files = dir('*pos_neg_action_PEs.dat');
-% num_of_subjects = length(files);
-% 
-% for index = 1:num_of_subjects
-%     filename = files(index).name;
-%     fprintf('File processing: %s\n', filename);
-%     id = filename(isstrprop(filename,'digit'));
-%     regressors = load(filename);
-%     [R, P] = corrcoef(regressors(:,3:4));
-%     corr_matrix(index) = R(1,2);
+% %collinearity
+%  files = dir('*PEs.dat');
+%  num_of_subjects = length(files);
+%  i = 1;
+% % 
+% for index = 1:2:num_of_subjects
+%     filename1 = files(index).name;
+%     filename2 = files(index+1).name;
+%     fprintf('File processing: %s\n', filename1);
+%     id = filename1(isstrprop(filename1,'digit'));
+%     regs1 = load(filename1);
+%     regs2 = load(filename2);
+%     [R, P] = corrcoef(regs1(:,3),regs2(:,3));
+%     corr_matrix(i) = R(1,2);
+%     i=i+1;
 % end
 
 
