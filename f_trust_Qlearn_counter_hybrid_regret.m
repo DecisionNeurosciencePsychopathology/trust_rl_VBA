@@ -1,4 +1,4 @@
-function  [fx] = f_trust_Qlearn_counter_hybrid(x,theta,u,inF)
+function  [fx] = f_trust_Qlearn_counter_hybrid_regret(x,theta,u,inF)
 
 % function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 % evolution function of q-values of a RL agent (2-armed bandit problem)

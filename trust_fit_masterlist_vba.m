@@ -3,7 +3,7 @@ close all;
 
 os = computer;
 if strcmp(os(1:end-2),'PCWIN')
-    datalocation = glob('?');
+    datalocation = glob('E:\Box Sync\Project Trust Game\data\processed\scan_behavior\');
 else
     [~, me] = system('whoami');
     me = strtrim(me);
@@ -14,7 +14,7 @@ else
     end
 end
 
-masterlist = dlmread('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/new subjects.txt');
+masterlist = dlmread([datalocation{:} 'allscansubjs_all_ages.txt']); %Need a way to automatically update these text files!
 
 % get ID list
 %cd(datalocation{1});
@@ -27,10 +27,10 @@ modelnames = {'ushifted_trust_Qlearning'};
 %% set parameters
 % nbasis = 4;
 % multinomial = 1;
+sigma_kappa = 1;                %kappa (or action bias) parameter
 counter = 1;                    %using counterfactual feedback
 multisession = 0;               %modelling runs separately
 fixed_params_across_runs = 1;   
-sigma_kappa = 1;                %kappa (or action bias) parameter
 reputation_sensitive = 0;       %modelling trustees' reputation
 humanity = 0;                   %modelling humanity
 valence_p = 0;                  %modelling valence of trustees
@@ -39,10 +39,10 @@ assymetry_choices = 0;          %modelling assymetry in choices
 regret = 0;
 
 
-parfor index=1:length(masterlist)
+for index=1:length(masterlist)
 %for index=1:length(masterlist)
     id = num2str(masterlist(index));
-    [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession,...
+    [posterior, out] = trust_Qlearning_ushifted(datalocation{:}, id, counter, multisession,...
         fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);  
     L(index) = out.F;
 end
