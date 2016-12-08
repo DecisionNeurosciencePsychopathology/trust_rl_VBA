@@ -9,7 +9,7 @@ A procedure to run programs in this collection can go as follows. (1) run trust_
 2b. trust_Qlearning_ushifted2.m: implemented for using with Social Value Model aka Fareri et al., 2015.
 
 3. Evolution functions:
-  3a. f_trust_Qlearn_counter.m: reinforcement reflects counterfactual rewards (with respect to the share action)
+  3a. f_trust_Qlearn_counter.m: reinforcement reflects counterfactual rewards (with respect to the share action).
   3b. f_trust_Qlearn1.m: reinforcement reflects counterfactual feedback from trustee (also with respect to the share actions).
   3c. f_trust_Qlearn2.m: simpler evolution function where reinforcement for keep/share is considered separately.
   3d. f_trust_Qlearn_counter_corrected.m: subject-counterfactual = actual rewards - would-be outcome from subject's alternative action    
