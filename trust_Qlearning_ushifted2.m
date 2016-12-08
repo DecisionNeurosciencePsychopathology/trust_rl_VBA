@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning_ushifted(datalocation,id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret, SVM)
+function [posterior,out] = trust_Qlearning_ushifted2(id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret, SVM)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -85,7 +85,7 @@ end
 close all
 % clear variables
 
-
+SVM = 1;
 
 %% Evolution and observation functions
 if counter == 0
@@ -116,13 +116,13 @@ n_hidden_states = 2; %track the value of sharing and PE
 
 %% Where to look for data
 %Quick username check, and path setting
-%     [~, me] = system('whoami');
-%     me = strtrim(me);
-%     if strcmp(me, 'polinavanyukov') == 1
-%         datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/';
-%     else
-%         datalocation = '/Users/localadmin/Google Drive/skinner/trust/scan_behavior/';
-%     end
+    [~, me] = system('whoami');
+    me = strtrim(me);
+    if strcmp(me, 'polinavanyukov') == 1
+        datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/';
+    else
+        datalocation = '/Users/localadmin/Google Drive/skinner/trust/scan_behavior/';
+    end
 ntrials = 192;
 
 %% Load subject's data
@@ -169,8 +169,8 @@ actions = double(actions);
 u(1,:) = actions;
 
 %rewards = double(strcmp(b.TrusteeDecides(b.Order_RS>-999),'share')); %rewards including counterfactual ones (trustee's actions)
-actions_trustee = double(strcmp(b.TrusteeDecides,'share')); %rewards including counterfactual ones (trustee's actions)
-actions_trustee(actions_trustee==0) = -1;
+actions_trustee = double(strcmp(b.TrusteeDecides,'share')); %trustee shared = 1, trustee kept = 0
+%actions_trustee(actions_trustee==0) = -1;
 %rewards(noresponse'==1) = -999;
 u(2,:) = actions_trustee(1:ntrials)';
 
@@ -181,6 +181,14 @@ trustee_ID(strcmp(b.identity,'good')) = 1;  % Lina's initial coding = 2
 trustee_ID(strcmp(b.identity,'bad')) = -1; 
 trustee_ID(strcmp(b.identity,'neutral')) = 0; % Lina: -1
 u(3,:) =  trustee_ID(1:ntrials);
+
+%trustee prerating
+trustee_prerate = zeros(length(b.identity),1);
+trustee_prerate(strcmp(b.identity,'good')) = b.rating_pre.good;
+trustee_prerate(strcmp(b.identity,'bad')) = b.rating_pre.bad;
+trustee_prerate(strcmp(b.identity,'neutral')) = b.rating_pre.neutral;
+trustee_prerate(strcmp(b.identity,'computer')) = b.rating_pre.computer;
+u(8,:)=trustee_prerate;
 
 % humanity vector
 human = ones(length(b.identity),1);
@@ -204,7 +212,7 @@ u(4,:) = index_vector(1:ntrials);
 
 y = u(1,:); %the subject's actions
 %shifting u
-u = [zeros(7,1) u(:,1:end-1)];
+u = [zeros(8,1) u(:,1:end-1)];
 
 
 %% Sensitivities or bias parameters
@@ -214,6 +222,7 @@ options.inF.valence_p = valence_p;
 options.inF.valence_n = valence_n;
 options.inF.assymetry_choices = assymetry_choices;
 options.inF.regret = regret;
+options.inF.svm_par = SVM;
 
 %% allocate feedback struture for simulations
 % fb.inH.er = 1;
@@ -243,6 +252,7 @@ if multisession
     end
         
 end
+
 options.isYout=zeros(size(u(1,:)));
 options.isYout(:,1)=1;
 options.isYout(noresponse'==1)=1;
@@ -257,39 +267,32 @@ options.skipf(1) = 1; % apply identity mapping from x0 to x1.
 % legend(ha,{'y: agent''s choices','p(y=1|theta,phi,m): behavioural tendency'})
 
 %% defined number of hidden states and parameters
-n_theta = 1+reputation_sensitive+humanity+valence_p+valence_n+assymetry_choices+(regret); %evolution function paramaters: by default = 1 (learning rate), adds 1 for each additional experimental design element
+n_theta = 1+reputation_sensitive+humanity+valence_p+valence_n+assymetry_choices+regret+SVM; %evolution function paramaters: by default = 1 (learning rate), adds 1 for each additional experimental design element
 n_phi = 1+sigmakappa; %observation function parameters: by default = 1 (beta), adds 1 for each additional observation parameter
 dim = struct('n',n_hidden_states,'n_theta',n_theta,'n_phi',n_phi, 'n_t', n_t);
 
 
 %% priors
 if n_phi ==2
-    priors.muPhi = [1;0];
+    priors.muPhi = [1;0]; 
 else 
-    priors.muPhi = 1;
+    priors.muPhi = 0;           %Fareri et al., 2015: rate of exploration (for choice rule) should vary between 0 and 1
 end
 
-priors.muTheta = zeros(dim.n_theta,1);
-priors.muX0 = zeros(n_hidden_states,1);
-if reputation_sensitive||humanity||valence_p||valence_n
-%    priors.SigmaTheta = 1e1*eye(dim.n_theta);     
-    priors.SigmaTheta = diag([10 1/3*ones(1,dim.n_theta-1)]);
-elseif assymetry_choices 
-    priors.SigmaTheta = diag([10 10]);
-elseif regret
-    priors.SigmaTheta = diag([10 1/3*ones(1,dim.n_theta-1)]);
-else
-    priors.SigmaTheta = 10;
-end
+%priors.muTheta = zeros(dim.n_theta,1);
+%priors.muX0 = zeros(n_hidden_states,1);
 
-if sigmakappa
-    priors.SigmaPhi = diag([10 sigmakappa/3]);
-else
-    priors.SigmaPhi = 10;
+priors.muTheta = [0; 0];                %Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5
+priors.muX0 = [0.5*1.5; 0.5];           %Fareri et al., 2015: initial value of sharing and initial value of p(trustee_sharing) = 0.5
+
+%% setting variance learning parameter and SVM for the observation function
+if SVM
+    priors.SigmaTheta = diag([1 1]);%Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5
 end
 
 %% set priors on initial states
-priors.SigmaX0 = .3*eye(dim.n);% tracking a single hidden state (value)
+priors.SigmaX0 = diag([0 0]);          %Fareri et al., 2015: tracking expected value and probability of trustee sharing
+%priors.SigmaX0 = .3*eye(dim.n);% tracking a single hidden state (value)
 %priors.SigmaX0 = diag([.3 0]);  % tracking value and prediction error
 %priors.SigmaX0 = 0*eye(dim.n); %used this before for tacking value and
 %prediction error
@@ -306,8 +309,8 @@ priors.b_alpha = 0;
 options.priors = priors;
 
 options.verbose=1;
-options.DisplayWin=0;
-options.GnFigs=0;
+options.DisplayWin=1;
+options.GnFigs=1;
 
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);
@@ -316,17 +319,6 @@ options.GnFigs=0;
 %% print condition order for interpreting results
 ConditionOrder  = unique(b.identity,'stable');
 out.design = ConditionOrder;
-
-%h = figure(1);
-%savefig(h,sprintf('%d_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d_regret%d', id, counter, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret));
-
-%% get prediction errors
-alpha = 1./(1+exp(-posterior.muTheta(1)));
-if ~multisession
-    out.suffStat.PE = diff(out.suffStat.muX)./alpha;
-else
-    out.suffStat.PE = diff(sum(out.suffStat.muX))./alpha;
-end
 
 if not(isnumeric(id))
     id = str2double(id);
@@ -338,7 +330,18 @@ if ~exist(subdir,'dir')
     mkdir(subdir)
 end
 
-filename = [subdir filesep sprintf('%d_cntr%d_mltrun%d_fixed%d_kappa%d_rep%d_hum%d_val_p%d_val_n%d_as_choices%d_reg%d', id, counter,multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret)];
+h = figure(1);
+
+%% get prediction errors
+alpha = 1./(1+exp(-posterior.muTheta(1)));
+if ~multisession
+    out.suffStat.PE = diff(out.suffStat.muX)./alpha;
+else
+    out.suffStat.PE = diff(sum(out.suffStat.muX))./alpha;
+end
+
+filename = [subdir filesep sprintf('%d_cntr%d_SVM%d', id, counter, SVM)];
+savefig(h,[subdir filesep sprintf('%d_cntr%d_SVM%d', id, counter, SVM)]);
 save(filename); 
 
 

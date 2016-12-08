@@ -17,46 +17,56 @@ else
 end
 
 %% chose models to fit
-modelnames = {'ushifted_trust_Qlearning'};
+% modelnames = {'ushifted_trust_Qlearning'};
 
 %% set parameters
 % nbasis = 4;
 % multinomial = 1;
-counter = 1;                    %using counterfactual feedback
-multisession = 1;               %modelling runs separately
-fixed_params_across_runs = 1;   
-sigma_kappa = 1;                %kappa (or action bias) parameter
+counter = 0;                    %using counterfactual feedback
+multisession = 0;               %modelling runs separately
+fixed_params_across_runs = 0;   
+sigma_kappa = 0;                %kappa (or action bias) parameter
 reputation_sensitive = 0;       %modelling trustees' reputation
 humanity = 0;                   %modelling humanity
 valence_p = 0;                  %modelling valence of trustees
 valence_n = 0;                  
 assymetry_choices = 0;          %modelling assymetry in choices
 regret = 0;
+SV = 1;
 
-% get ID list
+
+%% get ID list
 cd(datalocation{1});
 files = dir('trust*.mat');
 num_of_subjects = length(files);
-%ids = cellstr(NaN(num_of_subjects,1))
+
+masterlist = dlmread('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/hcscansubjs_all_ages.txt');
+num_of_subjects = length(masterlist);
+
 
 %% main loop
 %posterior = struct([length(datalocation),length(modelnames)]);
 %out = struct([]);
 L = [];
-parfor ct = 1:num_of_subjects
+%parfor ct = 1:num_of_subjects
+for ct = 1:num_of_subjects
     filename=files(ct).name;
     fprintf('File processing: %s\n', filename);
     id = filename(isstrprop(filename,'digit'));
+    id = num2str(masterlist(ct));
     if not(strcmp(id, '881209')|| strcmp(id, '217909'))
         %for m=1:length(modelnames)
             %[posterior(ct,m),out(ct,m)] = clock_sceptic_vba(id(ct),modelnames(m),nbasis, multinomial, multisession, fixed_params_across_runs, fit_propspread);
 %            [posterior(ct,5),out(ct,5)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
 %            [posterior(ct,1),out(ct,1)] = trust_Qlearning(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n);
 %            [posterior, out] = trust_Qlearning_ushifted(id, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices);
-             [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);  
+%            [posterior, out] = trust_Qlearning_ushifted(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);
+             [posterior, out] = trust_Qlearning_ushifted2(id, counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret, SV);  
              L(ct) = out.F;
         %end
     end
+    %keyboard
 end
-L_name = sprintf('L_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_regret%d',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);
+%L_name = sprintf('L_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choice%d_regret%d',counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);
+L_name = sprintf('SVM1_counter%d',counter);
 save(char(L_name), 'L');
