@@ -42,12 +42,12 @@ summary(m2)
 m3 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + (1+pt_decision|subject), binomial(link = "logit"), data = bt,na.action = na.omit, contrasts = list(trustee = "contr.sum"))
 summary(m3)
 
-#m4 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + (1+pt_decision*exchange.mc|subject), binomial(link = "logit"), data = bt,na.action = na.omit, contrasts = list(trustee = "contr.sum"))
-#summary(m4)
+m4 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + (1+pt_decision*exchange.mc|subject) + (1|trustee:subject), binomial(link = "logit"), data = bt,na.action = na.omit, contrasts = list(trustee = "contr.sum"))
+summary(m4)
 
 
 
-anova(m2,m3)
+anova(m3,m4)
 
 # plot pt_decision*exchange
 rg2exch <- lsmeans(m2,"pt_decision", by = "exchange.mc", at = list(exchange.mc = c(-20,  0,  20)))
