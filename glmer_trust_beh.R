@@ -74,7 +74,7 @@ summary(m6)
 anova(m5,m6)
 
 
-m7 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + ps_decision + (1 + pt_decision*exchange.mc|subject) + (1|trustee:subject), binomial(link = "logit"), data = bt,na.action = na.omit, contrasts = list(trustee = "contr.sum"))
+m7 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + ps_decision + (1 + pt_decision+exchange.mc|subject) + (1|trustee:subject), binomial(link = "logit"), data = bt,na.action = na.omit, contrasts = list(trustee = "contr.sum"))
 summary(m7)
 anova(m7)
 
