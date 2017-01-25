@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning_ushifted(id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret)
+function [posterior,out] = trust_Qlearning_ushifted(datalocation,id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret, save_str)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -27,6 +27,7 @@ elseif nargin<3
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<4
     fixed = 1;
     reputation_sensitive = 0;
@@ -36,6 +37,7 @@ elseif nargin<4
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<5
     sigmakappa = 0;
     humanity = 0;
@@ -44,6 +46,7 @@ elseif nargin<5
     reputation_sensitive = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<6
     humanity = 0;
     valence_p = 0;
@@ -51,25 +54,34 @@ elseif nargin<6
     reputation_sensitive = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<7
     humanity = 0;
     valence_p = 0;
     valence_n = 0;
     assymetry_choices = 0;
+    regret = 0;
+    save_str = '';
 elseif nargin<8
     valence_p =0;
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<9
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin<10
     assymetry_choices = 0;
     regret = 0;
+    save_str = '';
 elseif nargin < 11
     regret = 0;
+    save_str = '';
+elseif nargin < 12
+    save_str = '';
 end
 
 close all
@@ -81,7 +93,7 @@ close all
 if counter == 0
     f_fname = @f_trust_Qlearn1; % evolution function (Q-learning) with a single hidden state, Q(share)
 else
-    f_fname = @f_trust_Qlearn_counter;% evolution function (Q-learning) with a single hidden state, Q(share), and counterfactual rewards
+    f_fname = @f_trust_Qlearn_counter_corrected;% evolution function (Q-learning) with a single hidden state, Q(share), and counterfactual rewards
 end
 
 if assymetry_choices == 1 || sigmakappa == 0
@@ -97,25 +109,29 @@ end
 n_hidden_states = 2; %track the value of sharing and PE
 %n_hidden_states = 1; %only track the value of sharing, i.e. V(trustee)
 
+
 %% Where to look for data
 %Quick username check, and path setting
-    [~, me] = system('whoami');
-    me = strtrim(me);
-    if strcmp(me, 'polinavanyukov') == 1
-        datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/';
-    else
-        datalocation = '/Users/localadmin/Google Drive/skinner/trust/scan_behavior/';
-    end
-ntrials = 192;
+%     [~, me] = system('whoami');
+%     me = strtrim(me);
+%     if strcmp(me, 'polinavanyukov') == 1
+%         datalocation = '/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/';
+%     else
+%         datalocation = '/Users/localadmin/Google Drive/skinner/trust/scan_behavior/';
+%     end
+
 
 %% Load subject's data
 %cd /Users/localadmin/Google' Drive'/skinner/trust/scan_behavior/
 % exemplar Qlearning subjects: 881105, 213704, 216806, 220043
-cd(datalocation);
+%cd(datalocation);
 if strcmp('46069', id)
     id = '046069';
 end
-load(sprintf('trust%s',id))
+load([datalocation sprintf('trust%d',id)])
+
+ntrials = length(b.TrialNumber);
+
 %ntrials = length(b.Reversal);
 % our favorite Qlearning subject: 881105
 % load trust881105.mat;
@@ -288,7 +304,7 @@ priors.SigmaX0 = diag([.3 0]);  % tracking value and prediction error
 options.priors = priors;
 
 options.verbose=1;
-options.DisplayWin=1;
+options.DisplayWin=0;
 options.GnFigs=0;
 
 %% model inversion
@@ -296,10 +312,10 @@ options.GnFigs=0;
 %displayResults(posterior,out,y,x,x0,theta,phi,Inf,Inf);
 
 %% print condition order for interpreting results
-ConditionOrder  = unique(b.identity,'stable')
+ConditionOrder  = unique(b.identity,'stable');
 out.design = ConditionOrder;
 
-h = figure(1);
+%h = figure(1);
 %savefig(h,sprintf('%d_counter%d_multisession%d_fixed%d_SigmaKappa%d_reputation%d_humanity%d_valence_p%d_valence_n%d_assymetry_choices%d_regret%d', id, counter, multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret));
 
 %% get prediction errors
@@ -314,7 +330,13 @@ if not(isnumeric(id))
     id = str2double(id);
 end
 
-filename = sprintf('%d_cntr%d_mltrun%d_fixed%d_kappa%d_rep%d_hum%d_val_p%d_val_n%d_as_choices%d_reg%d', id, counter,multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret);
+subdir = func2str(f_fname);
+
+if ~exist([save_str subdir],'dir')
+    mkdir([save_str subdir])
+end
+
+filename = [save_str subdir filesep sprintf('%d_cntr%d_mltrun%d_fixed%d_kappa%d_rep%d_hum%d_val_p%d_val_n%d_as_choices%d_reg%d', id, counter,multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret)];
 save(filename); 
 
 
