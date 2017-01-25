@@ -11,13 +11,14 @@ View(beha_behavior)
 
 b = beha_behavior
 bt <- data.table(b)
-#bt[, "pt_decision":=c(NA, t_decision[-.N]), by=trustee]
+bt[, "pt_decision":=c(NA, t_decision[-.N]), by=trustee]
+bt = bt[bt$s_decision != 0]
 # recode decisions into 0 and 1
-#bt$t_decision[t_decision==-1]=0
-#bt$s_decision[s_decision==-1]=0
-#bt$pt_decision[b$pt_decision==-1]=0
-bt$trustee = as.factor(bt$trustee)
+bt$t_decision[t_decision==-1]=0
+bt$s_decision[s_decision==-1]=0
+bt$pt_decision[bt$pt_decision==-1]=0
 
+bt$trustee = as.factor(bt$trustee)
 bt$subject = as.factor(bt$subject)
 bt$pt_decision = as.factor(bt$pt_decision)
 bt$t_decision = as.factor(bt$t_decision)
@@ -78,7 +79,17 @@ m7 <- glmer(s_decision ~ exchange.mc*pt_decision + pt_decision*trustee + ps_deci
 summary(m7)
 anova(m7)
 
+#establishing a reference grid
+likelihood.m3 <- ref.grid(m3)
+
+#marginal means of trustree, plus contrast
+trustee.lsm <- lsmeans(likelihood.m3, "trustee")
+trustee.sum <- summary(trustee.lsm, infer = c(TRUE,TRUE), level = 0.95, adjust = "bon")
+contrast(trustee.lsm, method = "pairwise", adjust ="bon")
+trustee.plot2 <- plot(trustee.lsm, type ~ trustee, horiz=F, ylab = "Probability of sharing (predicted)", xlab = "Trustee Type")
+
 # plot pt_decision*exchange
+<<<<<<< Updated upstream
 rg4exch <- lsmeans(m4,"pt_decision", by = "exchange.mc", at = list(exchange.mc = c(-20,  0,  20)))
 plot(rg4exch, type ~ pt_decision, horiz=F, ylab = "Probability of sharing (predicted)", xlab = "Previous trustee decision")
 
@@ -115,3 +126,13 @@ anova(rt_m3)
 rg_rt_m2 <- lsmeans(rt_m2,"trustee")
 plot(rg_rt_m2, type ~ trustee, horiz=F, ylab = "RT (predicted)", xlab = "Trustee")
 
+=======
+rg2exch <- lsmeans(m3,"pt_decision", by = "exchange.mc", at = list(exchange.mc = c(-24.5,  0,  24.5)))
+plot(rg2exch, type ~ pt_decision, horiz=F, ylab = "Probability of sharing (predicted)", xlab = "Previous trustee decision")
+pairs(rg2exch)
+
+# plot pt_decision*trustee
+rg2trust <- lsmeans(m3,"pt_decision", by = "trustee")
+plot(rg2trust, type ~ pt_decision, horiz=F, ylab = "Probability of sharing (predicted)", xlab = "Previous trustee decision")
+pairs(rg2trust)
+>>>>>>> Stashed changes
