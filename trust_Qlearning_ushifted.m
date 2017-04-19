@@ -14,10 +14,12 @@ function [posterior,out] = trust_Qlearning_ushifted(datalocation,id, counter, mu
 % out                           fit statistics, diagnostics
 
 if nargin<1
-    error('*** Enter 6-digit subject ID ***')
+    error('*** Location to single subject .mat files ***')
 elseif nargin<2
-    error('*** Specify the f function type: counterfactuals or not ***')
+    error('*** Enter 6-digit subject ID ***')
 elseif nargin<3
+    error('*** Specify the f function type: counterfactuals or not ***')
+elseif nargin<4
     multisession = 0;
     fixed = 1;    
     reputation_sensitive = 0;
@@ -28,7 +30,7 @@ elseif nargin<3
     assymetry_choices = 0;
     regret = 0;
     SVM = 0;
-elseif nargin<4
+elseif nargin<5
     fixed = 1;
     reputation_sensitive = 0;
     sigmakappa = 0;
@@ -38,16 +40,8 @@ elseif nargin<4
     assymetry_choices = 0;
     regret = 0;
     SVM = 0;
-elseif nargin<5
-    sigmakappa = 0;
-    humanity = 0;
-    valence_p = 0;
-    valence_n = 0;
-    reputation_sensitive = 0;
-    assymetry_choices = 0;
-    regret = 0;
-    SVM = 0;
 elseif nargin<6
+    sigmakappa = 0;
     humanity = 0;
     valence_p = 0;
     valence_n = 0;
@@ -59,26 +53,34 @@ elseif nargin<7
     humanity = 0;
     valence_p = 0;
     valence_n = 0;
+    reputation_sensitive = 0;
     assymetry_choices = 0;
+    regret = 0;
+    SVM = 0;
 elseif nargin<8
+    humanity = 0;
+    valence_p = 0;
+    valence_n = 0;
+    assymetry_choices = 0;
+elseif nargin<9
     valence_p =0;
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
     SVM = 0;
-elseif nargin<9
+elseif nargin<10
     valence_n = 0;
     assymetry_choices = 0;
     regret = 0;
     SVM = 0;
-elseif nargin<10
+elseif nargin<11
     assymetry_choices = 0;
     regret = 0;
     SVM = 0;
-elseif nargin < 11
+elseif nargin < 12
     regret = 0;
     SVM = 0;
-elseif nargin < 12
+elseif nargin < 13
     SVM = 0;
 end
 
@@ -129,9 +131,7 @@ ntrials = 192;
 %cd /Users/localadmin/Google' Drive'/skinner/trust/scan_behavior/
 % exemplar Qlearning subjects: 881105, 213704, 216806, 220043
 %cd(datalocation);
-if strcmp('46069', id)
-    id = '046069';
-end
+
 load([datalocation sprintf('trust%s',id)])
 %ntrials = length(b.Reversal);
 % our favorite Qlearning subject: 881105
