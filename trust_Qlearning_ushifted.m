@@ -91,9 +91,15 @@ close all
 
 %% Evolution and observation functions
 if counter == 0
-    f_fname = @f_trust_Qlearn1; % evolution function (Q-learning) with a single hidden state, Q(share)
+    %f_fname = @f_trust_Qlearn1;                         % evolution function (Q-learning) with a single hidden state, Q(share)
+    %f_fname = @f_trust_Qlearn_null_pmv;                  % new null function that only updates the value of share when the subject shared;
+    %f_fname = @f_trust_Qlearn_counter_hybrid_regret;     %regret
+    f_fname = @f_trust_Qlearn_counter_hybrid_regret_pmv; %regret corrected by PMV
+elseif counter == 2
+    f_fname = @f_trust_Qlearn_mixed_null_countersubject;% evolution function (Q-learning) with a single hidden state, Q(share) and mixed counterfactual + actual rewards
 else
-    f_fname = @f_trust_Qlearn_counter_corrected;% evolution function (Q-learning) with a single hidden state, Q(share), and counterfactual rewards
+    f_fname = @f_trust_Qlearn_counter_hybrid;        % evolution function (Q-learning) with a single hidden state, Q(share) and counterfactual rewards
+   % f_fname = @f_trust_Qlearn_counter_trustee;       % counterfactual for trustees    
 end
 
 if assymetry_choices == 1 || sigmakappa == 0
@@ -212,6 +218,9 @@ options.inF.valence_p = valence_p;
 options.inF.valence_n = valence_n;
 options.inF.assymetry_choices = assymetry_choices;
 options.inF.regret = regret;
+if counter == 2
+    options.inF.epsilon = 1;
+end
 
 %% allocate feedback struture for simulations
 % fb.inH.er = 1;
@@ -255,7 +264,10 @@ options.skipf(1) = 1; % apply identity mapping from x0 to x1.
 % legend(ha,{'y: agent''s choices','p(y=1|theta,phi,m): behavioural tendency'})
 
 %% defined number of hidden states and parameters
-n_theta = 1+reputation_sensitive+humanity+valence_p+valence_n+assymetry_choices+(regret); %evolution function paramaters: by default = 1 (learning rate), adds 1 for each additional experimental design element
+n_theta = 1+reputation_sensitive+humanity+valence_p+valence_n+assymetry_choices; %evolution function paramaters: by default = 1 (learning rate), adds 1 for each additional experimental design element
+if counter == 2
+    n_theta = n_theta + 1;
+end
 n_phi = 1+sigmakappa; %observation function parameters: by default = 1 (beta), adds 1 for each additional observation parameter
 dim = struct('n',n_hidden_states,'n_theta',n_theta,'n_phi',n_phi, 'n_t', n_t);
 
@@ -274,8 +286,10 @@ if reputation_sensitive||humanity||valence_p||valence_n
     priors.SigmaTheta = diag([10 1/3*ones(1,dim.n_theta-1)]);
 elseif assymetry_choices 
     priors.SigmaTheta = diag([10 10]);
-elseif regret
-    priors.SigmaTheta = diag([10 1/3*ones(1,dim.n_theta-1)]);
+% elseif regret
+%     priors.SigmaTheta = diag([10 1/3*ones(1,dim.n_theta-1)]);
+elseif counter == 2
+    priors.SigmaTheta = diag([10 10]);
 else
     priors.SigmaTheta = 10;
 end
@@ -304,8 +318,8 @@ priors.SigmaX0 = diag([.3 0]);  % tracking value and prediction error
 options.priors = priors;
 
 options.verbose=1;
-options.DisplayWin=0;
-options.GnFigs=0;
+options.DisplayWin=1;
+options.GnFigs=1;
 
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);

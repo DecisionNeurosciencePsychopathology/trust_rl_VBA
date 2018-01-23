@@ -14,7 +14,7 @@ cd(data_dir_str)
 files = dir('*.dat');
 num_of_subjects = length(files);
 
-parfor index = 1:num_of_subjects
+for index = 1:num_of_subjects
     filename=files(index).name;
     fprintf('File processing: %s\n', filename);
     x = load(filename);

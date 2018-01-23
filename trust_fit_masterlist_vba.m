@@ -1,7 +1,7 @@
 clear variables;
 close all;
 
-scanner_subjs = 0; %Set to 1 is scanning subjects processed, 0 is behavioral
+scanner_subjs = 1; %Set to 1 is scanning subjects processed, 0 is behavioral
 hallquist_override = 0; %If using Mike's dataset
 save_str = ''; %default
 
@@ -14,13 +14,18 @@ if strcmp(os(1:end-2),'PCWIN')
     else
         datalocation = glob('E:/Box Sync/Project Trust Game/data/processed/beha_behavior/');
         masterlist = load([path_to_trust_ids 'trust_ids_behav']); %Need a way to automatically update these text files!
-        save_str = 'final_behavior/';
+        save_str = 'final_behav';
     end
 else
     [~, me] = system('whoami');
     me = strtrim(me);
+    path_to_trust_ids = '/Users/polinavanyukov/Documents/scripts/Trust/trust_rl_VBA/';
     if strcmp(me,'polinavanyukov')==1
+%         datalocation = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/beha_behavior/');
+%         masterlist = load([path_to_trust_ids 'trust_ids_behav']);
         datalocation = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/');
+        masterlist = load([path_to_trust_ids 'trust_ids']);
+%         masterlist = load([path_to_trust_ids 'trust_hc_subjs_age_filtered']);
     else
         datalocation = glob('?');
     end
@@ -49,7 +54,7 @@ modelnames = {'ushifted_trust_Qlearning'};
 % nbasis = 4;
 % multinomial = 1;
 sigma_kappa = 1;                %kappa (or action bias) parameter
-counter = 1;                    %using counterfactual feedback
+counter = 0;                    %counter = 1: using counterfactual feedback; counter = 2: using a mixed form of counterfactual+actual rewards
 multisession = 0;               %modelling runs separately
 fixed_params_across_runs = 1;   
 reputation_sensitive = 0;       %modelling trustees' reputation

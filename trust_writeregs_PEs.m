@@ -4,7 +4,7 @@ subdir=subdir{:};
 
 %subdir = 'f_trust_Qlearn_counter_hybrid';
 %If using the null model (f_trust_Qlearn1) do not flip the PEs
-if strcmp(subdir,'f_trust_Qlearn1')
+if strcmp(subdir,'f_trust_Qlearn1') || strcmp(subdir,'f_trust_Qlearn_null_pmv')
     flipthis=0;
 else
     flipthis=1;
@@ -44,7 +44,7 @@ end
 
 
 %% choose model's parameters and load model
-if strcmp(subdir,'f_trust_Qlearn1') %Band-aid, but really it should pull the params from the file name
+if strcmp(subdir,'f_trust_Qlearn1') ||  strcmp(subdir,'f_trust_Qlearn_counter_hybrid_regret_pmv') || strcmp(subdir,'f_trust_Qlearn_null_pmv')%Band-aid, but really it should pull the params from the file name
     counter = 0;
 else
     counter = 1;
@@ -449,8 +449,8 @@ for index = 1:num_of_subjects
         %            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxG0xpdecision],'delimiter','\t','precision','%.6f');
         %            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxHCxpdecision],'delimiter','\t','precision','%.6f');
         %
-        dlmwrite([write_location '/trust' id 'trustee_BvsA' '.dat'], BvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
-        dlmwrite([write_location '/trust' id 'PEsxBvsA' '.dat'], pesxBvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
+        %dlmwrite([write_location '/trust' id 'trustee_BvsA_decisionAligned' '.dat'], BvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
+        %dlmwrite([write_location '/trust' id 'PEsxBvsA' '.dat'], pesxBvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
         dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f'); %Original we always use!
         %dlmwrite([write_location '/trust' id 'nullHybridDiffPEs' '.dat'], pes,'delimiter','\t','precision','%.6f'); %PE diff only!
         %             dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');

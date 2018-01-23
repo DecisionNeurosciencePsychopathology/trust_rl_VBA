@@ -12,6 +12,7 @@ kappa = phi(2);
 
 
 dQ = x(1);
+%dQ = x(1)-1; %for the corrected null model
 
 
 % dQ = (x(1)-x(2));
