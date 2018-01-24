@@ -50,8 +50,8 @@ function  [fx] = f_trust_Qlearn_mixed_null_countersubject(x,theta,u,inF)
 
 
 %% define counterfactual rewards
-if (u(2)==1 && u(1)==1)    %trustee shared, subject shared
-    rc = 0;                
+if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
+    rc = 0;                % BUT why don't they consider their alternative action as a reference?
     ra = 1.5;
 elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
     rc = 0;
@@ -59,12 +59,11 @@ elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
 elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
     rc = -1;
     ra = -1;
-else                       %trustee shared, subject kept
-    rc = 0.5;
-    ra = -1; 
+else rc = 0.5;
+    ra = -1; %trustee shared, subject kept
 end
 
-epsilon = 1./(1+exp(-theta(2))); % sigmoid-transform the counterfactual sensitivity parameter
+
 
 %% code counterfactual rewards (also apply cr to all trials OR incongruent trials)?
 
@@ -81,8 +80,8 @@ if inF.regret == 1
         r = actual_reward + counter_reward;
     end
 else
-    %a weighted mixture of actual and counterfactual rewards
-    r = (1-epsilon)*ra + epsilon*rc;
+    %r = actual_reward + counter_reward;
+    r = r;
 end
 
 if inF.assymetry_choices==1
@@ -92,8 +91,9 @@ else
     alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
 end
 
+epsilon = 1./(1+exp(-theta(2))); % sigmoid-transform the counterfactual sensitivity parameter
 
-pe = r - x(1); % prediction error takes in a mixture of actual and counterfactual rewards
+pe = (1-epsilon)*ra + epsilon*rc - x(1); % prediction error takes in a mixture of actual and counterfactual rewards
 fx = zeros(length(x),1);
 
 %% introduce reputation sensitivity: this assumes that reputation sensitivity is
