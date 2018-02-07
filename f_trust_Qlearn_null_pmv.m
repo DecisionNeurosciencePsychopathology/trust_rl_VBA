@@ -31,14 +31,14 @@ else
 end
 
 
-if inF.assymetry_choices==1
-% %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
-%     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
-else
-    alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
-end
+% if inF.assymetry_choices==1
+% % %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
+% %     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
+% else
+alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
+% end
 
-if u(1)<1
+if u(1)<1 %keep trials
     pe = 0;
 else
     pe = r-x(1); % prediction error
@@ -48,7 +48,7 @@ fx = zeros(length(x),1);
 %% introduce reputation sensitivity: this assumes that reputation sensitivity is
 %% an additive effect wrt the initial value state
 
-if inF.reputation_sensitive==1
+% if inF.reputation_sensitive==1
 %     theta(2) = sig(theta(2));
 %     fx(1) = x(1)+alpha*pe + theta(2).*u(3).*u(4);
 % elseif inF.humanity==1
@@ -67,7 +67,7 @@ if inF.reputation_sensitive==1
 % %    fx(1) = x(1)+alpha*pe +theta(2).*u(7).*u(4);
 %     theta(2) = sig(theta(2));
 %     fx(1) = x(1)+alpha*pe + theta(2).*u(6).*u(4);   
-elseif u(1)<1
+if u(1)<1
     fx(1) = x(1);
 else
     fx(1) = x(1) + alpha*pe;

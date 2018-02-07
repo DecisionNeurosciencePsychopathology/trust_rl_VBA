@@ -1,4 +1,4 @@
-function  [fx] = f_trust_Qlearn_counter_hybrid_regret(x,theta,u,inF)
+function  [fx] = f_trust_Qlearn_policy(x,theta,u,inF)
 
 % function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 % evolution function of q-values of a RL agent (2-armed bandit problem)
@@ -45,36 +45,44 @@ function  [fx] = f_trust_Qlearn_counter_hybrid_regret(x,theta,u,inF)
 %     counter_reward = 0.5;
 % end
 
-%Pre update of rew matrix 11/30/2016
-% if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-%     r = 1.5;                % BUT why don't they consider their alternative action as a reference?
-% elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
-%     r = -1.5;
-% elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
-%     r = -1;
-% else r = 0.5;               %trustee shared, subject kept
+if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
+    r = 1.5;                % BUT why don't they consider their alternative action as a reference?
+elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
+    r = 0;
+elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
+    r = -1;
+else r = 0.5;               %trustee shared, subject kept
+end
+
+%% code counterfactual rewards (also apply cr to all trials OR incongruent trials)?
+
+% a parameter the modulates the "regret" wrt "share" action
+% if inF.regret == 1
+%     %omega = 1./(1+exp(-theta(2))); %bounded between 0 and 1.
+%     omega1 = theta(2);
+% %    omega2 = theta(3);
+%     if (u(2)<1 && u(1) ==1)         %trustee kept, subject shared
+%         r = actual_reward + counter_reward * (1+omega1);
+%     elseif  (u(2)==1 && u(1) <1)    %trustee shared, subject kept
+%         r = actual_reward + counter_reward * (1+omega1);
+%     else
+%         r = actual_reward + counter_reward;
+%     end
+% else
+%     %r = actual_reward + counter_reward;
+%     r = r;
 % end
 
 
-
-if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-    r = 1.5;
-elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
-    r = -1.5;
-elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
-    r = 0.5;
-else
-    r = 0.5;               %trustee shared, subject kept
-end
 
 % if inF.assymetry_choices==1
 % %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
 %     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
 % else
-alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
+%     alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
 % end
 
-
+alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
 pe = r-x(1); % prediction error
 fx = zeros(length(x),1);
 
@@ -100,10 +108,11 @@ fx = zeros(length(x),1);
 % %    fx(1) = x(1)+alpha*pe +theta(2).*u(7).*u(4);
 %     theta(2) = sig(theta(2));
 %     fx(1) = x(1)+alpha*pe + theta(2).*u(6).*u(4);   
-% else
-fx(1) = x(1) + alpha*pe;
+% else 
+%     fx(1) = x(1) + alpha*pe; % default learning rule
 % end
 
+fx(1) = x(1) + alpha*pe;
 %tracking PEs
 fx(2) = pe;
 

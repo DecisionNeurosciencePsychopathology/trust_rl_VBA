@@ -57,28 +57,28 @@ end
 %% code counterfactual rewards (also apply cr to all trials OR incongruent trials)?
 
 % a parameter the modulates the "regret" wrt "share" action
-if inF.regret == 1
-    %omega = 1./(1+exp(-theta(2))); %bounded between 0 and 1.
-    omega1 = theta(2);
-%    omega2 = theta(3);
-    if (u(2)<1 && u(1) ==1)         %trustee kept, subject shared
-        r = actual_reward + counter_reward * (1+omega1);
-    elseif  (u(2)==1 && u(1) <1)    %trustee shared, subject kept
-        r = actual_reward + counter_reward * (1+omega1);
-    else
-        r = actual_reward + counter_reward;
-    end
-else
+% if inF.regret == 1
+%     %omega = 1./(1+exp(-theta(2))); %bounded between 0 and 1.
+%     omega1 = theta(2);
+% %    omega2 = theta(3);
+%     if (u(2)<1 && u(1) ==1)         %trustee kept, subject shared
+%         r = actual_reward + counter_reward * (1+omega1);
+%     elseif  (u(2)==1 && u(1) <1)    %trustee shared, subject kept
+%         r = actual_reward + counter_reward * (1+omega1);
+%     else
+%         r = actual_reward + counter_reward;
+%     end
+% else
     %r = actual_reward + counter_reward;
     r = r;
-end
+% end
 
-if inF.assymetry_choices==1
-%     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
-    alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
-else
-    alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
-end
+% if inF.assymetry_choices==1
+% %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
+%     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
+% else
+alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
+% end
 
 
 pe = r-x(1); % prediction error
@@ -87,28 +87,28 @@ fx = zeros(length(x),1);
 %% introduce reputation sensitivity: this assumes that reputation sensitivity is
 %% an additive effect wrt the initial value state
 
-if inF.reputation_sensitive==1
-    theta(2) = sig(theta(2));
-    fx(1) = x(1)+alpha*pe + theta(2).*u(3).*u(4);
-elseif inF.humanity==1
-    theta(2) = sig(theta(2));
-    fx(1) = x(1)+alpha*pe + theta(2).*u(5).*u(4);
-elseif inF.valence_n==1 && inF.valence_p==1
-%    fx(1) = x(1)+alpha*pe +theta(2).*u(6).*u(4)+theta(3)*u(7).*u(4);
-    theta(2) = sig(theta(2));
-    theta(3) = sig(theta(3));
-    fx(1) = x(1)+alpha*pe -theta(2).*u(7).*u(4)+theta(3).*u(6).*u(4);
-elseif inF.valence_n==1
-%    fx(1) = x(1)+alpha*pe +theta(2).*u(6).*u(4);
-    theta(2) = sig(theta(2));
-    fx(1) = x(1)+alpha*pe -theta(2).*u(7).*u(4);
-elseif inF.valence_p==1
-%    fx(1) = x(1)+alpha*pe +theta(2).*u(7).*u(4);
-    theta(2) = sig(theta(2));
-    fx(1) = x(1)+alpha*pe + theta(2).*u(6).*u(4);   
-else
-    fx(1) = x(1) + alpha*pe;
-end
+% if inF.reputation_sensitive==1
+%     theta(2) = sig(theta(2));
+%     fx(1) = x(1)+alpha*pe + theta(2).*u(3).*u(4);
+% elseif inF.humanity==1
+%     theta(2) = sig(theta(2));
+%     fx(1) = x(1)+alpha*pe + theta(2).*u(5).*u(4);
+% elseif inF.valence_n==1 && inF.valence_p==1
+% %    fx(1) = x(1)+alpha*pe +theta(2).*u(6).*u(4)+theta(3)*u(7).*u(4);
+%     theta(2) = sig(theta(2));
+%     theta(3) = sig(theta(3));
+%     fx(1) = x(1)+alpha*pe -theta(2).*u(7).*u(4)+theta(3).*u(6).*u(4);
+% elseif inF.valence_n==1
+% %    fx(1) = x(1)+alpha*pe +theta(2).*u(6).*u(4);
+%     theta(2) = sig(theta(2));
+%     fx(1) = x(1)+alpha*pe -theta(2).*u(7).*u(4);
+% elseif inF.valence_p==1
+% %    fx(1) = x(1)+alpha*pe +theta(2).*u(7).*u(4);
+%     theta(2) = sig(theta(2));
+%     fx(1) = x(1)+alpha*pe + theta(2).*u(6).*u(4);   
+% else
+fx(1) = x(1) + alpha*pe;
+% end
 
 %tracking PEs
 fx(2) = pe;
