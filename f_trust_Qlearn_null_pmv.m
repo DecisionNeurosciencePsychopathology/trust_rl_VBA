@@ -1,4 +1,4 @@
-function  [fx] = f_trust_Qlearn1(x,theta,u,inF)
+function  [fx] = f_trust_Qlearn_null_pmv(x,theta,u,inF)
 
 % function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 % evolution function of q-values of a RL agent (2-armed bandit problem)
@@ -15,79 +15,40 @@ function  [fx] = f_trust_Qlearn1(x,theta,u,inF)
 %   - dfdx/dfdP: gradient of the q-values evolution function, wrt q-values
 %   and evolution parameter, respectively.F 
 
-%r = 1; % when trustee shares the reward is $1.5, or for simplicity r = 1
+%r = 1; % when trustee shares the reward is $1.5
 % theta(1) -- basic learning rate
 % theta(2) -- punishment sensitivity or reality of rewards parameter
 
-%write out actual rewards first, then counterfactual w/ omega
 
-% %% code actual rewards
-% actual_reward = 0;
-% if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-%     actual_reward = 1.5;
-% elseif (u(2)==0 && u(1)==1) %trustee kept, subject shared
-%     actual_reward = 0;
-% elseif (u(2)==0 && u(1)<1)  %trustee kept, subject kept
-%     actual_reward = -1;
-% else 
-%     actual_reward = -1;
-% end
-% 
-% %% counterfactual rewards
-% counter_reward = 0;
-% if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-%     counter_reward = 0;
-% elseif (u(2)==0 && u(1)==1) %trustee kept, subject shared
-%     counter_reward = -1;
-% elseif (u(2)==0 && u(1)<1)  %trustee kept, subject kept
-%     counter_reward = -1;
-% else
-%     counter_reward = 0.5;
-% end
-
-if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-    r = 1.5;                % BUT why don't they consider their alternative action as a reference?
+if (u(2)==1 && u(1)==1)    %trustee shared, subject shared
+    r = 1.5;               
 elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
     r = 0;
 elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
     r = -1;
-else r = -1;               %trustee shared, subject kept
-end
-
-%% code counterfactual rewards (also apply cr to all trials OR incongruent trials)?
-
-% a parameter the modulates the "regret" wrt "share" action
-if inF.regret == 1
-%     %omega = 1./(1+exp(-theta(2))); %bounded between 0 and 1.
-%     omega1 = theta(2);
-% %    omega2 = theta(3);
-%     if (u(2)<1 && u(1) ==1)         %trustee kept, subject shared
-%         r = actual_reward + counter_reward * (1+omega1);
-%     elseif  (u(2)==1 && u(1) <1)    %trustee shared, subject kept
-%         r = actual_reward + counter_reward * (1+omega1);
-%     else
-%         r = actual_reward + counter_reward;
-%     end
 else
-    %r = actual_reward + counter_reward;
-    r = r;
+    r = -1;                %trustee shared, subject kept
 end
 
-if inF.assymetry_choices==1
-% %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
-%     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
+
+% if inF.assymetry_choices==1
+% % %     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
+% %     alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
+% else
+alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
+% end
+
+if u(1)<1 %keep trials
+    pe = 0;
 else
-    alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
+    pe = r-x(1); % prediction error
 end
-
-
-pe = r-x(1); % prediction error
 fx = zeros(length(x),1);
 
 %% introduce reputation sensitivity: this assumes that reputation sensitivity is
 %% an additive effect wrt the initial value state
 
-if inF.reputation_sensitive==1
+% if inF.reputation_sensitive==1
 %     theta(2) = sig(theta(2));
 %     fx(1) = x(1)+alpha*pe + theta(2).*u(3).*u(4);
 % elseif inF.humanity==1
@@ -106,6 +67,8 @@ if inF.reputation_sensitive==1
 % %    fx(1) = x(1)+alpha*pe +theta(2).*u(7).*u(4);
 %     theta(2) = sig(theta(2));
 %     fx(1) = x(1)+alpha*pe + theta(2).*u(6).*u(4);   
+if u(1)<1
+    fx(1) = x(1);
 else
     fx(1) = x(1) + alpha*pe;
 end

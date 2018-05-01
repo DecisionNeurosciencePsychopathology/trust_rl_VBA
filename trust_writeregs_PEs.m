@@ -1,5 +1,14 @@
-clear variables;
+function trust_writeregs_PEs(subdir)
 close all;
+subdir=subdir{:};
+
+%subdir = 'f_trust_Qlearn_counter_hybrid';
+%If using the null model (f_trust_Qlearn1) do not flip the PEs
+if strcmp(subdir,'f_trust_Qlearn1') || strcmp(subdir,'f_trust_Qlearn_null_pmv')
+    flipthis=0;
+else
+    flipthis=1;
+end
 
 
 subdir = 'f_trust_Qlearn_counter_hybrid';
@@ -14,7 +23,7 @@ if strcmp(os(1:end-2),'PCWIN')
     %oldpe_location = glob('/Users/polinavanyukov/Box Sync/Project Trust Game/data/processed/scan_behavior/group_data/');
     pe_location = glob(['E:\trust_model_comparision\trust_rl_VBA\' subdir '\PEs']);
     matf_location = glob('E:\Box Sync\Project Trust Game\data\processed\scan_behavior\');
-    regs_location= glob('E:\data\trust\regs\feedback_times\');
+    regs_location= glob('E:\data\trust\regs\');
     write_location=strcat(['E:\trust_model_comparision\trust_rl_VBA\' subdir '\regs\'],date);
 else
     [~, me] = system('whoami');
@@ -39,7 +48,11 @@ end
 
 
 %% choose model's parameters and load model
-counter = 1;
+if strcmp(subdir,'f_trust_Qlearn1') ||  strcmp(subdir,'f_trust_Qlearn_counter_hybrid_regret_pmv') || strcmp(subdir,'f_trust_Qlearn_null_pmv')%Band-aid, but really it should pull the params from the file name
+    counter = 0;
+else
+    counter = 1;
+end
 multisession = 0;
 fixed_params_across_runs = 1;
 sigma_kappa = 1;
@@ -66,6 +79,9 @@ values = load(char(N_name));
 new_M_name =  strcat(pe_location,sprintf('modelPEs_cntr%d_mltrun%d_fixed%d_kappa%d_rep%d_hum%d_val_p%d_val_n%d_as_choices%d_reg%d',...
       counter, multisession, fixed_params_across_runs, sigma_kappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret),'.mat');
 
+%For difference of PE's only!!!
+%new_M_name =  strcat(pe_location,sprintf('diff_hybrid_null_m'),'.mat');
+
 newpes = load(char(new_M_name));
 grpnewpes = newpes.M;
 %grpoldpes = oldpes.M;
@@ -75,6 +91,8 @@ grpcalcpes = calcpes.P;
 cd(regs_location{1})
 files = dir('*feedback_Times.dat');
 %files = dir('*decision_Times.dat');
+%files = dir('*task_Times.dat');
+
 num_of_subjects = length(files);
 
 %for index = 60
@@ -88,7 +106,7 @@ for index = 1:num_of_subjects
             str2double(id)==881100||str2double(id)==220024||...
             str2double(id)==220244||str2double(id)==881209)
         if str2double(id) == 46069
-            subject = load(strcat(matf_location{1},'trust0',id));
+            %subject = load(strcat(matf_location{1},'trust0',id));
         else
             subject = load(strcat(matf_location{1},'trust',id));
         end
@@ -128,6 +146,9 @@ for index = 1:num_of_subjects
         trustee_action = ones(length(subject.b.identity),1);
         trustee_survey_GB = zeros(length(subject.b.identity),1);
         
+        %Bad vs all (excluding computer)
+        trustee_BvsA = zeros(length(subject.b.identity),1);
+        
         %% human vs non-human
         trustee_HC(strcmp(subject.b.identity,'computer')) = 0;
         
@@ -136,6 +157,10 @@ for index = 1:num_of_subjects
         trustee_GB(strcmp(subject.b.identity,'bad')) = -1;
         trustee_BA(strcmp(subject.b.identity,'bad')) = 1;
         trustee_G0(strcmp(subject.b.identity,'good')) = 1;
+        
+        %% bad vs all (excluding computer)
+        trustee_BvsA(strcmp(subject.b.identity,'bad')) = -1;
+        trustee_BvsA(strcmp(subject.b.identity,'good') | strcmp(subject.b.identity,'neutral') ) = 1;
         
         %% trustee actions
         trustee_action(strcmp(subject.b.TrusteeDecides,'keep'))=-1;
@@ -425,7 +450,10 @@ for index = 1:num_of_subjects
         %            dlmwrite([write_location '/trust' id 'PPEsxG0xp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxG0xpdecision],'delimiter','\t','precision','%.6f');
         %            dlmwrite([write_location '/trust' id 'PPEsxHCxp_decision_d' '.dat'],[regressors(:, 1:2) ppes_decxHCxpdecision],'delimiter','\t','precision','%.6f');
         %
-        dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f');
+        %dlmwrite([write_location '/trust' id 'trustee_BvsA_decisionAligned' '.dat'], BvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
+        %dlmwrite([write_location '/trust' id 'PEsxBvsA' '.dat'], pesxBvsA,'delimiter','\t','precision','%.6f'); %Bad vs all x PEs
+        dlmwrite([write_location '/trust' id 'PEs' '.dat'], pes,'delimiter','\t','precision','%.6f'); %Original we always use!
+        %dlmwrite([write_location '/trust' id 'nullHybridDiffPEs' '.dat'], pes,'delimiter','\t','precision','%.6f'); %PE diff only!
         %             dlmwrite([write_location '/trust' id 'BAxPEs' '.dat'],pesxBA,'delimiter','\t','precision','%.6f');
         %            dlmwrite([write_location '/trust' id 'GBxPEs' '.dat'],pesxGB,'delimiter','\t','precision','%.6f');
         %            dlmwrite([write_location '/trust' id 'G0xPEs' '.dat'],pesxG0,'delimiter','\t','precision','%.6f');

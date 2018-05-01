@@ -1,5 +1,8 @@
-function  [fx] = f_trust_Qlearn_counter_hybrid_regret(x,theta,u,inF)
+function  [fx] = f_trust_Qlearn_mixed_null_countersubject(x,theta,u,inF)
 
+%% reminder for Lina -- add a mixing parameter in theta
+
+%%
 % function  [fx,dfdx,dfdP] = f_trust_Qlearn_counter(x,theta,u,inF)
 % evolution function of q-values of a RL agent (2-armed bandit problem)
 % [fx,dfdx,dfdP] = f_Qlearn2(x,P,u,in)
@@ -45,26 +48,21 @@ function  [fx] = f_trust_Qlearn_counter_hybrid_regret(x,theta,u,inF)
 %     counter_reward = 0.5;
 % end
 
-%Pre update of rew matrix 11/30/2016
-% if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-%     r = 1.5;                % BUT why don't they consider their alternative action as a reference?
-% elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
-%     r = -1.5;
-% elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
-%     r = -1;
-% else r = 0.5;               %trustee shared, subject kept
-% end
 
-
-
+%% define counterfactual rewards
 if (u(2)==1 && u(1)==1)     %trustee shared, subject shared
-    r = 0;
+    rc = 0;                % BUT why don't they consider their alternative action as a reference?
+    ra = 1.5;
 elseif (u(2)<1 && u(1)==1) %trustee kept, subject shared
-    r = -1.5;
+    rc = 0;
+    ra = 0;
 elseif (u(2)<1 && u(1)<1)  %trustee kept, subject kept
-    r = 0.5;
-else r = 0.5;               %trustee shared, subject kept
+    rc = -1;
+    ra = -1;
+else rc = 0.5;
+    ra = -1; %trustee shared, subject kept
 end
+
 
 
 %% code counterfactual rewards (also apply cr to all trials OR incongruent trials)?
@@ -93,8 +91,9 @@ else
     alpha = 1./(1+exp(-theta(1))); % learning rate is bounded between 0 and 1.
 end
 
+epsilon = 1./(1+exp(-theta(2))); % sigmoid-transform the counterfactual sensitivity parameter
 
-pe = r-x(1); % prediction error
+pe = (1-epsilon)*ra + epsilon*rc - x(1); % prediction error takes in a mixture of actual and counterfactual rewards
 fx = zeros(length(x),1);
 
 %% introduce reputation sensitivity: this assumes that reputation sensitivity is

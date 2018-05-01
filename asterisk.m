@@ -1,7 +1,8 @@
-function b = asterisk()
-subdir = 'f_trust_Qlearn_counter_hybrid';
+function b = asterisk(subdir)
+%subdir = 'f_trust_Qlearn_counter_hybrid';
 %adding asterisk to existing .dat files
-data_dir_str= ['E:\trust_model_comparision\trust_rl_VBA\' subdir '\regs\14-Nov-2016\'];
+subdir=subdir{:};
+data_dir_str= sprintf('E:/trust_model_comparision/trust_rl_VBA/%s/regs/%s/',subdir,date);
 data_dump_str = data_dir_str;
 
 if ~exist(data_dump_str,'file')
@@ -13,7 +14,8 @@ cd(data_dir_str)
 files = dir('*.dat');
 num_of_subjects = length(files);
 
-parfor index = 1:num_of_subjects
+
+for index = 1:num_of_subjects
     filename=files(index).name;
     fprintf('File processing: %s\n', filename);
     x = load(filename);
@@ -27,6 +29,11 @@ parfor index = 1:num_of_subjects
     dlmcell([data_dump_str filename],c,'\t');
 end
 
+
+%Copy each models PE's to a date dir somewhere to consolidate it for easy
+%movement to Thorndike
+to_thorndike_dir='E:\data\trust\regs\last_pes\';
+copyfile([data_dump_str '*.dat'],[to_thorndike_dir date filesep subdir filesep]);
 
 return
 
