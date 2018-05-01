@@ -316,10 +316,11 @@ priors.SigmaX0 = diag([.3 0]);  % tracking value and prediction error
 % priors.b_alpha = 0;
 
 options.priors = priors;
-
 options.verbose=1;
-options.DisplayWin=1;
-options.GnFigs=1;
+
+%Grpahics
+options.DisplayWin=0;
+options.GnFigs=0;
 
 %% model inversion
 [posterior,out] = VBA_NLStateSpaceModel(y,u,f_fname,g_fname,dim,options);

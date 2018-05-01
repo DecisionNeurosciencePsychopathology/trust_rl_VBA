@@ -1,4 +1,4 @@
-function [posterior,out] = trust_Qlearning_ushifted_SVM(datalocation, id, counter, multisession, fixed, sigmakappa,reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret, save_str, SVM)
+function [posterior,out] = trust_Qlearning_ushifted_SVM(datalocation, id, counter, multisession, fixed, sigmakappa, save_str, SVM)
 
 % VBA fitting of Qlearning to trust data, using VBA-toolbox
 %
@@ -88,15 +88,9 @@ close all
 SVM = 1;
 
 %% Evolution and observation functions
-if SVM == 1 
-    if counter == 0
-        f_fname = @f_trust_SVM1;
-        g_fname = @g_trust_SVM1;
-    end
-end
+f_fname = @f_trust_SVM1;
+g_fname = @g_trust_SVM1;
 
-%h_fname = @h_randOutcome; % feedback function (reward schedule)
-% h_fname = @h_Id; % feedback function, reads from u
 
 n_hidden_states = 2; %track the value of sharing and PE
 %n_hidden_states = 1; %only track the value of sharing, i.e. V(trustee)
@@ -196,12 +190,6 @@ u = [zeros(8,1) u(:,1:end-1)];
 
 
 %% Sensitivities or bias parameters
-options.inF.reputation_sensitive = reputation_sensitive;
-options.inF.humanity = humanity;
-options.inF.valence_p = valence_p;
-options.inF.valence_n = valence_n;
-options.inF.assymetry_choices = assymetry_choices;
-options.inF.regret = regret;
 options.inF.svm_par = SVM;
 
 %% allocate feedback struture for simulations
@@ -247,39 +235,20 @@ options.skipf(1) = 1; % apply identity mapping from x0 to x1.
 % legend(ha,{'y: agent''s choices','p(y=1|theta,phi,m): behavioural tendency'})
 
 %% defined number of hidden states and parameters
-n_theta = 1+reputation_sensitive+humanity+valence_p+valence_n+assymetry_choices+regret+SVM; %evolution function paramaters: by default = 1 (learning rate), adds 1 for each additional experimental design element
-n_phi = 1+sigmakappa; %observation function parameters: by default = 1 (beta), adds 1 for each additional observation parameter
+n_theta = 1+SVM; %evolution function paramaters: learning rate in Eq. 3, scaling or SVM parameter in Eq. 5 (Fareri et al., 2015)
+n_phi = 1; %observation function parameters: by default = 1 (beta), adds 1 for each additional observation parameter
 dim = struct('n',n_hidden_states,'n_theta',n_theta,'n_phi',n_phi, 'n_t', n_t);
 
 
 %% priors
-if n_phi ==2
-    priors.muPhi = [1;0]; 
-else 
-    priors.muPhi = 0;           %Fareri et al., 2015: rate of exploration (for choice rule) should vary between 0 and 1
-end
+priors.muPhi = 1;               %Fareri et al., 2015: rate of exploration (for choice rule) should vary between 0 and 1
+priors.muTheta = [0; 0];        %Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5 (re-scaling occurs inside the evolution function)
+priors.muX0 = [0.5*1.5; 0.5];   %Fareri et al., 2015: initial value of sharing and initial value of p(trustee_sharing) = 0.5
 
-%priors.muTheta = zeros(dim.n_theta,1);
-%priors.muX0 = zeros(n_hidden_states,1);
+priors.SigmaPhi = 10;
+priors.SigmaTheta = diag([10 10]);%Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5
+priors.SigmaX0 = diag([0 0]);   %Fareri et al., 2015: tracking expected value and probability of trustee sharing - fixed.
 
-priors.muTheta = [0; 0];                %Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5
-priors.muX0 = [0.5*1.5; 0.5];           %Fareri et al., 2015: initial value of sharing and initial value of p(trustee_sharing) = 0.5
-
-%% setting variance learning parameter and SVM for the observation function
-if SVM
-    priors.SigmaTheta = diag([1 1]);%Fareri et al., 2015: learning parameter varies from 0 to 1; SVM_par varies from 0 to 5
-end
-
-%% set priors on initial states
-priors.SigmaX0 = diag([0 0]);          %Fareri et al., 2015: tracking expected value and probability of trustee sharing
-
-%priors.SigmaX0 = .3*eye(dim.n);% tracking a single hidden state (value)
-%priors.SigmaX0 = diag([.3 0]);  % tracking value and prediction error
-%priors.SigmaX0 = 0*eye(dim.n); %used this before for tacking value and
-%prediction error
-% priors.SigmaX0 = zeros(dim.n); % because of correlation with learning
-% % rates, one may want to fix initial states to analyze trustee-wise
-% % learning rates
 
 %% set hyper-priors
 priors.a_sigma = 1;       % Jeffrey's prior
@@ -320,7 +289,7 @@ if ~exist([save_str subdir],'dir')
     mkdir([save_str subdir])
 end
 
-filename = [save_str subdir filesep sprintf('%d_cntr%d_mltrun%d_fixed%d_kappa%d_rep%d_hum%d_val_p%d_val_n%d_as_choices%d_reg%d', id, counter,multisession, fixed, sigmakappa, reputation_sensitive, humanity, valence_p, valence_n, assymetry_choices, regret)];
+filename = [save_str subdir filesep sprintf('%d_cntr%d_mltrun%d_fixed%d_kappa%d', id, counter,multisession, fixed, sigmakappa)];
 save(filename); 
 
 

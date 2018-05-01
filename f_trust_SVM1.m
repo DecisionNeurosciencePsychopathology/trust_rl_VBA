@@ -16,15 +16,9 @@ function  [fx] = f_trust_SVM1(x,theta,u,inF)
 % theta(1) -- basic learning rate
 % theta(2) -- SVM_parameter
 
-if inF.assymetry_choices==1
-%     alpha=1./(1+exp(-theta(1).*u(1)+theta(2).*(u(1)-1)));    
-    alpha=1./(1+exp(-theta(1)+theta(2).*(u(1)-1)));    
 
-else
-    alpha = 1./(1+exp(-theta(1)));   %Fareri et al., 2015: default learning rate is bounded between 0 and 1.
-end
-
-    SVM_par = 5./(1+exp(-theta(1))); %Fareri et al., 2015: SV parameter is bounded between 0 and 1 and scaled up by a factor of 5.
+alpha = 1./(1+exp(-theta(1)));   %Fareri et al., 2015: default learning rate is bounded between 0 and 1.
+SVM_par = 5./(1+exp(-theta(2))); %Fareri et al., 2015: SV parameter is bounded between 0 and 1 and scaled up by a factor of 5.
 
 pe = u(2)-x(2);                         %where x(2) should be probability of trusteee sharing calculated from previous trials
 fx(2) = x(2)  + alpha * pe;             %Fareri et al., 2015: calculating the probability of trustee sharing;
